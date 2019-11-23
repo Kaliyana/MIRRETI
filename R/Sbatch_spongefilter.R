@@ -7,8 +7,9 @@ library(SPONGE)
 #---------------------------------------------------------------------------
 
 
-spongefilter <- function(expr_data, interaction_file, coefficient.direction, out_file){
-  load(as.character(expr_data))
+spongefilter <- function(mir_data, tpm_data, interaction_file, coefficient.direction, out_file){
+  load(as.character(mir_data))
+  load(as.character(tpm_data))
   interaction_candidates <- as.matrix(read.csv(as.character(interaction_file), sep = "\t", header = T, row.names = 1, check.names = F))
   tpm_expr <- as.matrix(extended_tpm_expr)
   colnames(extended_mirna_expr) <- gsub("\\.", "-", colnames(extended_mirna_expr))
