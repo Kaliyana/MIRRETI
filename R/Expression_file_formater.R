@@ -16,6 +16,11 @@ library(data.table)
 #' @return A subset of the expression data with samples matching desired cancer type and sample type as data frame.
 process_expression_file <- function(expr_data, sample_annotation, primary_disease = NULL, sample_type_id = NULL){
   sample_list <- retrieve_TCGA_sample_list(sample_annotation, primary_disease = primary_disease, sample_type_id = sample_type_id)
+  if(length(rownames(sample_list)) < 1){
+    cat("Sample list of size 0 detected. Proceeding leads to empty subset of expression data.\nExecution is interrupted.\n")
+    quit
+  }
+  
   expr_data_subset <- transpose_and_filter_expression_data_for_samples(expr_data, sample_list)
   return(expr_data_subset)
 }
@@ -70,6 +75,10 @@ retrieve_TCGA_sample_list <- function(sample_annotation, primary_disease = NULL,
   } else {
     sample_list <- sample_annotation[sample_annotation$X_primary_disease == primary_disease & sample_annotation$sample_type_id == sample_type_id,]
   }
+  
+  if(length(rownames(sample_list)) < 1){
+    cat("\nRetrieved sample list of size 0.\n")
+  }
 
   return(as.vector(sample_list$sample))
 }
@@ -91,6 +100,9 @@ transpose_and_filter_expression_data_for_samples <- function(expr_data, sample_l
 
   # Filter expression dataset for sample IDs in sample_list
   expr_data_filtered <- subset(expr_data, row.names(expr_data) %in% sample_list)
+  if(length(rownames(expr_data_filtered)) < 1){
+    cat("\nSubset of expression data based on the given sample list is empty.\nThe resulting expression matrix contains only values of 0.\n")
+  }
   
   # Spot sample IDs missing in the current expression dataset and 
   # build matrix with values of 0 for the missing sample IDs
@@ -132,15 +144,15 @@ printExpressionFile <- function(expr_data, out_file){
 #                                     EXAMPLE RUN
 #-------------------------------------------------------------------------------------
 
-mir_expr_file <- "/nfs/home/students/evelyn/bachelor/data/TCGA_expression_data/pancanMiRs_EBadjOnProtocolPlatformWithoutRepsWithUnCorrectMiRs_08_04_16.xena"
+#mir_expr_file <- "/nfs/home/students/evelyn/bachelor/data/TCGA_expression_data/pancanMiRs_EBadjOnProtocolPlatformWithoutRepsWithUnCorrectMiRs_08_04_16.xena"
   #"D:\\Bioinformatics\\Bachelordata\\TCGA_expression_data\\pancanMiRs_EBadjOnProtocolPlatformWithoutRepsWithUnCorrectMiRs_08_04_16_breastcancer.xena"
-tpm_expr_file <- "/nfs/home/students/evelyn/bachelor/data/TCGA_expression_data/tcga_Kallisto_tpm"
-sample_annot_file <- "/nfs/home/students/evelyn/bachelor/data/TCGA_expression_data/cancertype_filter/TCGA_phenotype_denseDataOnlyDownload.tsv"
+#tpm_expr_file <- "/nfs/home/students/evelyn/bachelor/data/TCGA_expression_data/tcga_Kallisto_tpm"
+#sample_annot_file <- "/nfs/home/students/evelyn/bachelor/data/TCGA_expression_data/cancertype_filter/TCGA_phenotype_denseDataOnlyDownload.tsv"
   #"D:\\Bioinformatics\\Bachelordata\\TCGA_expression_data\\cancertype_filter\\TCGA_phenotype_denseDataOnlyDownload.tsv"
 #out_file <- "/nfs/home/students/evelyn/bachelor/data/TCGA_expression_data/tcga_mirna_breastinvasivecarcinoma_primarytumor_test.tsv"
-expr_data <- readExpressionFile(tpm_expr_file)
-sample_annotation <- read.csv(sample_annot_file, header = T, sep = "\t")
-expr_subset <- process_expression_file(expr_data, sample_annotation, "breast invasive carcinoma", "01")
+#expr_data <- readExpressionFile(tpm_expr_file)
+#sample_annotation <- read.csv(sample_annot_file, header = T, sep = "\t")
+#expr_subset <- process_expression_file(expr_data, sample_annotation, "breast invasive carcinoma", "01")
 #process_and_print_expression_file(expr_file, sample_annot_file, "breast invasive carcinoma", "01", out_file)
 
 #mirna_expr <- readExpressionFile("/nfs/home/students/evelyn/bachelor/data/TCGA_expression_data/tcga_mirna_breastinvasivecarcinoma_solidtissuenormal.tsv")
