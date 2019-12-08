@@ -29,7 +29,6 @@ spongefilter <- function(preprocessed_data, coefficient.direction, out_file){
 spongefilter.parameters <- as.data.frame(read.csv("/nfs/home/students/evelyn/bachelor/R_workspace/MIRRETI/params/SPONGEfilter_filetable.tsv", sep = "\t", header = T))
 
 
-
 #---------------------------------------------------------------------------
 #                             Slurm job request
 #---------------------------------------------------------------------------
