@@ -22,18 +22,6 @@ sponge.filter(tpm_expr = tpm_expr,
 
 
 
-subset.exprdata.for.variance <- function(expr_data, molecule_number){
-  varrow <- sapply(data.frame(expr_data), var)
-  hist(varrow)
-  tempdf <- t(data.frame(varrow))
-  rownames(tempdf) <- 'variance'
-  colnames(tempdf) <- colnames(expr_data)
-  expr_data <- rbind(expr_data, tempdf)
-  expr_data <- expr_data[,order(expr_data[nrow(expr_data),], decreasing = T)]
-  expr_data <- expr_data[rownames(expr_data) != 'variance', 1:molecule_number]
-}
-
-
 sponge.filter <- function(tpm_expr, mir_expr, interactions_matrix, outfile, print = F){
   sponge_filtered_le <- sponge_gene_miRNA_interaction_filter(gene_expr = tpm_expr,
                                                              mir_expr = mir_expr,
