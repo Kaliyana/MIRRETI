@@ -173,10 +173,17 @@ preproc.filter.variance <- function(expr_data, var.threshold = 0.2){
 }
 
 # Finished
-preproc.subset.variance <- function(expr_data, top.number = 10){
+preproc.colsubset.variance <- function(expr_data, top.number = 10){
+  expr_data <- as.data.frame(expr_data)
   expr_data$variance <- apply(data.frame(expr_data), 1, var)
   expr_data <- expr_data[order(expr_data$variance, decreasing = T), ]
   expr_data <- expr_data[1:top.number, colnames(expr_data) != 'variance']
+  return(expr_data)
+}
+
+preproc.rowsubset.variance <- function(expr_data, top.number = 10){
+  expr_data <- preproc.colsubset.variance(t(tpm_expr), top.number)
+  expr_data <- t(expr_data)
   return(expr_data)
 }
 
