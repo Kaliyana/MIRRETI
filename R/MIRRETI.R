@@ -173,7 +173,7 @@ preproc.filter.variance <- function(expr_data, var.threshold = 0.2){
 }
 
 # Finished
-preproc.colsubset.variance <- function(expr_data, top.number = 10){
+preproc.rowsubset.variance <- function(expr_data, top.number = 10){
   expr_data <- as.data.frame(expr_data)
   expr_data$variance <- apply(data.frame(expr_data), 1, var)
   expr_data <- expr_data[order(expr_data$variance, decreasing = T), ]
@@ -181,7 +181,8 @@ preproc.colsubset.variance <- function(expr_data, top.number = 10){
   return(expr_data)
 }
 
-preproc.rowsubset.variance <- function(expr_data, top.number = 10){
+# Finished
+preproc.colsubset.variance <- function(expr_data, top.number = 10){
   expr_data <- preproc.colsubset.variance(t(tpm_expr), top.number)
   expr_data <- t(expr_data)
   return(expr_data)
@@ -200,7 +201,7 @@ preproc.data.spongefilter <- function(mir_expr, tpm_expr, interactions){
   mir_expr <- t(mir_expr)
   tpm_expr <- t(tpm_expr)
   #rownames(expr_data) <- gsub("\\.", "-", rownames(expr_data))
-  interactions_matrix <- as.matrix(table(interactions[ , c("ensembl_transcript_id", "miRNA")]))
+  interactions_matrix <- as.matrix(as.data.frame.matrix(table(interactions[ , c("ensembl_transcript_id", "miRNA")])))
   return(list(mir_expr, tpm_expr, interactions_matrix))
 }
 
@@ -211,16 +212,33 @@ preproc.data.spongefilter <- function(mir_expr, tpm_expr, interactions){
 #-------------------------------------------------------------------------------------
 
 
+# Finished
 sponge.filter <- function(tpm_expr, mir_expr, interactions_matrix){
   sponge_filtered_le <- sponge_gene_miRNA_interaction_filter(gene_expr = tpm_expr,
                                                              mir_expr = mir_expr,
                                                              mir_predicted_targets = interactions_matrix,
+                                                             coefficient.threshold = -0.05,
                                                              coefficient.direction = "<")
   sponge_filtered_ge <- sponge_gene_miRNA_interaction_filter(gene_expr = tpm_expr,
                                                              mir_expr = mir_expr,
                                                              mir_predicted_targets = interactions_matrix,
+                                                             coefficient.threshold = 0.05,
                                                              coefficient.direction = ">")
-}  
+  le_candidates <- sponge.unlist.candidates(sponge_filtered_le)
+  le_candidates$correlation <- rep("<", nrow(le_candidates))
+  ge_candidates <- sponge.unlist.candidates(sponge_filtered_ge)
+  ge_candidates$correlation <- rep(">", nrow(ge_candidates))
+  candidates <- rbind(le_candidates, ge_candidates)
+  return(candidates)
+}
+
+# Finished
+sponge.unlist.candidates <- function(sponge_filtered){
+  candidates <- do.call(rbind, sponge_filtered)
+  candidates$transcript <- lapply(strsplit(rownames(candidates), "\\."), '[', 1)
+  rownames(candidates) <- NULL
+  return(candidates)
+}
 
 
 

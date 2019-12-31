@@ -1,0 +1,37 @@
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:data.table’:
+
+    between, first, last
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Cache found
+Cache found
+tpm_size:	10	
+tpm_expr:	1044	
+ tpm_expr:	10	
+Loading required package: Matrix
+Loaded glmnet 3.0-1
+
+Loading required package: foreach
+Loading required package: rngtools
+Loading required package: pkgmaker
+Loading required package: registry
+
+Attaching package: ‘pkgmaker’
+
+The following object is masked from ‘package:base’:
+
+    isFALSE
+
+tpm_size:	50	
+tpm_expr:	1044	
+ tpm_expr:	50	
