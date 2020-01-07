@@ -2,6 +2,7 @@ library(rslurm)
 library(SPONGE)
 library(doParallel)
 library(ggplot2)
+library(dplyr)
 
 #sponge.runtime(40)
 #spongefilter_runtimes <-  add.to.runtimes()
@@ -16,16 +17,19 @@ add.to.runtimes <- function(){
 
 # HARDCODED!
 plot.runtimes <- function(runtimes){
+  cluster.size = 40
   runtimes <- spongefilter_runtimes
   runtimes$runtime <- as.numeric(runtimes$runtime)
-  runtimes <- runtimes[runtimes$clusters == 40 & (runtimes$runtime < 441 | runtimes$runtime > 442), ]
+  runtimes <- runtimes[runtimes$clusters == cluster.size & (runtimes$runtime < 441 | runtimes$runtime > 442), ]
   lm <- lm(runtime ~ tpm_size, data = runtimes)
   nlm <- lm(runtime ~ tpm_size + I(tpm_size*log(tpm_size)), data=runtimes)
   runtimes <- mutate(runtimes, model = predict(nlm))
-  ggplot(runtimes, aes(x = tpm_size, y = runtime)) + geom_point() + geom_smooth(method = "lm", se = F)
-  ggplot(runtimes) + geom_point(aes(tpm_size, runtime)) + geom_line(aes(tpm_size,model), color="blue")
-  # tpm_size = 15834
-  predict(nlm, newdata = list(tpm_size=15834))
+  ggplot(runtimes, aes(x = tpm_size, y = runtime)) + geom_point() + geom_smooth(method = "lm", se = F) + ggtitle(paste('SPONGE runtime analysis on ', cluster.size, ' cluster - lm fitting', sep = ""))
+  ggplot(runtimes) + geom_point(aes(tpm_size, runtime)) + geom_line(aes(tpm_size,model), color="blue")  + ggtitle(paste('SPONGE runtime analysis on ', cluster.size, ' cluster - nlm fitting', sep = ""))
+  # tpm_size <- 15834
+  tpm_size <- 10000
+  predict(lm, newdata = list(tpm_size=tpm_size))
+  predict(nlm, newdata = list(tpm_size=tpm_size))
 }
 
 #---------------------------------------------------------------------------

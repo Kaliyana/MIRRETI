@@ -18,9 +18,9 @@ spongefilter <- function(dragonball){
   sample.type.id = "01"
 
   candidates <- mirreti(mir.filepath, tpm.filepath, list(utr5.filepath, cds.filepath, utr3.filepath),
-                        sampleannot.filepath, primary.disease, sample.type.id)
+                        sampleannot.filepath, primary.disease, sample.type.id, cluster.size = 25, top.number = 100)
   
-  saveRDS(candidates, file = "/nfs/home/students/evelyn/bachelor/data/thirdShot/SPONGE_candidates.RDS")
+  saveRDS(candidates, file = "/nfs/home/students/evelyn/bachelor/data/thirdShot/SPONGE_candidates_2.RDS")
 }
 
 
@@ -30,7 +30,7 @@ spongefilter <- function(dragonball){
 #---------------------------------------------------------------------------
 
 
-sjob <- slurm_apply(spongefilter, params = data.frame(dragonball = TRUE), jobname = "sponge_interaction_filter_single",
-                    nodes = 1, cpus_per_node = 40)
+sjob <- slurm_apply(spongefilter, params = data.frame(dragonball = TRUE), jobname = "sponge_interaction_filter_singlesubset_2",
+                    nodes = 1, cpus_per_node = 25)
 results <- get_slurm_out(sjob, outtype = "raw")
 results
