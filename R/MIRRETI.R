@@ -3,6 +3,7 @@ library(graphics)
 library(dplyr)
 library(biomaRt)
 library(SPONGE)
+library(doParallel)
 
 
 
@@ -36,6 +37,32 @@ read.interaction.files <- function(utr5.filepath, cds.filepath, utr3.filepath){
 read.sample.annotation.file <- function(sampleannotation.filepath){
   sample_annotation <- read.csv(sampleannotation.filepath, header = T, sep = "\t")
   return(sample_annotation)
+}
+
+read.mirreti.data <- function(mir.filepath, tpm.filepath, interactions.filepath, sampleannot.filepath){
+    start.time <- Sys.time()
+    cat("______________________________________________________________________\n")
+    cat(paste(start.time, "Start reading the data...\n", sep = "\t"))
+    
+  mir_expr <- read.expression.file(mir.filepath)
+  tpm_expr <- read.expression.file(tpm.filepath)
+  interactions <- NULL
+  if(typeof(interactions.filepath) == 'character'){
+    interactions <- read.interaction.file(interactions.filepath)
+  } else if(typeof(interactions.filepath) == 'list'){
+    interactions <- read.interaction.files(utr5.filepath = interactions.filepath[[1]],
+                                           cds.filepath = interactions.filepath[[2]],
+                                           utr3.filepath = interactions.filepath[[3]])
+  } else {
+    cat(paste("Parameter interactions.filepath is of wrong object type: ", typeof(interactions.filepath), sep = ""))
+  }
+  sample_annotation <- read.sample.annotation.file(sampleannot.filepath)
+  
+    end.time <- Sys.time()
+    diff.time <- difftime(end.time, start.time, units = "secs")
+    cat(paste(end.time, "\tFinished reading the data\nTotal procession time:\t", diff.time, " SECS\n\n", sep = ""))
+  
+  return(list(mir_expr, tpm_expr, interactions, sample_annotation))
 }
 
 
@@ -205,6 +232,44 @@ preproc.data.spongefilter <- function(mir_expr, tpm_expr, interactions){
   return(list(mir_expr, tpm_expr, interactions_matrix))
 }
 
+# Finished
+preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary.disease, sample.type.id, top.number = NULL){
+    start.time <- Sys.time()
+    cat("______________________________________________________________________\n")
+    cat(paste(start.time, "Start preprocessing the data...\n", sep = "\t"))
+    
+  # Step 1: ID conversion  
+  interactions <- preproc.idconversion.refseqtoensembl(interactions)
+  
+  # Step 2: Extract samples for specific disease and sample type
+  box <- preproc.filter.samples(mir_expr, tpm_expr, sample_annotation, primary.disease, sample.type.id)
+  
+  # Step 3: Filter expression data for NAs and variance
+  mir_expr <- preproc.filter.variance(preproc.filter.na(box[[1]], 0))
+  tpm_expr <- preproc.filter.variance(preproc.filter.na(box[[2]], -9.9658))
+  
+  # Step 3: Crossfilter data
+  box <- preproc.crossfilter(mir_expr, tpm_expr, interactions)
+  mir_expr <- box[[1]]
+  tpm_expr <- box[[2]]
+  interactions <- box[[3]]
+  
+  # Step 4: Subset data if reqired
+  if(!is.null(top.number))
+    tpm_expr <- preproc.rowsubset.variance(tpm_expr, top.number)
+  
+  # Step 5: METHOD TANGLING (not usefull but needed for runtime analysis; Redo it!)
+  box <- preproc.data.spongefilter(mir_expr, tpm_expr, interactions)
+  mir_expr <- box[[1]]
+  tpm_expr <- box[[2]]
+  interactions_matrix <- box[[3]]
+  
+    end.time <- Sys.time()
+    diff.time <- difftime(end.time, start.time, units = "secs")
+    cat(paste(end.time, "\tFinished preprocessing the data\nTotal procession time:\t", diff.time, " SECS\n\n", sep = ""))
+    
+  return(list(mir_expr, tpm_expr, interactions, interactions_matrix))
+}
 
 
 #-------------------------------------------------------------------------------------
@@ -213,22 +278,39 @@ preproc.data.spongefilter <- function(mir_expr, tpm_expr, interactions){
 
 
 # Finished
-sponge.filter <- function(tpm_expr, mir_expr, interactions_matrix){
+sponge.filter <- function(tpm_expr, mir_expr, interactions_matrix, cluster.size = 40){
+    start.time <- Sys.time()
+    cat("______________________________________________________________________\n")
+    cat(paste(start.time, "\tStart running the SPONGE interaction filter on ", cluster.size, " cluster...\n", sep = ""))
+      cl <- makePSOCKcluster(cluster.size)
+      registerDoParallel(cl)
+
   sponge_filtered_le <- sponge_gene_miRNA_interaction_filter(gene_expr = tpm_expr,
                                                              mir_expr = mir_expr,
                                                              mir_predicted_targets = interactions_matrix,
                                                              coefficient.threshold = -0.05,
-                                                             coefficient.direction = "<")
+                                                             coefficient.direction = "<",
+                                                             parallel.chunks = cluster.size)
+  cat(paste(Sys.time(), "\tFinished the SPONGE interaction filter step for negativ correlation\n"), sep = "")
   sponge_filtered_ge <- sponge_gene_miRNA_interaction_filter(gene_expr = tpm_expr,
                                                              mir_expr = mir_expr,
                                                              mir_predicted_targets = interactions_matrix,
                                                              coefficient.threshold = 0.05,
-                                                             coefficient.direction = ">")
+                                                             coefficient.direction = ">",
+                                                             parallel.chunks = cluster.size)
+    cat(paste(Sys.time(), "\t\t\tFinished the SPONGE interaction filter step for positiv correlation\n"), sep = "\t")
   le_candidates <- sponge.unlist.candidates(sponge_filtered_le)
   le_candidates$correlation <- rep("<", nrow(le_candidates))
   ge_candidates <- sponge.unlist.candidates(sponge_filtered_ge)
   ge_candidates$correlation <- rep(">", nrow(ge_candidates))
   candidates <- rbind(le_candidates, ge_candidates)
+  colnames(candidates) <- c('miRNA', 'coefficient', 'ensembl_transcript_id', 'correlation')
+  
+      stopCluster(cl)
+    end.time <- Sys.time()
+    diff.time <- difftime(end.time, start.time, units = "secs")
+    cat(paste(end.time, "\t\t\tFinished total run of the SPONGE interaction filter\nTotal procession time:\t", diff.time, " SECS\n\n", sep = ""))
+  
   return(candidates)
 }
 
@@ -243,9 +325,35 @@ sponge.unlist.candidates <- function(sponge_filtered){
 
 
 #-------------------------------------------------------------------------------------
-#                                     Methods
+#                                     MIRRETI method
 #-------------------------------------------------------------------------------------
 
+
+mirreti <- function(mir.filepath, tpm.filepath, interactions.filepath, sampleannot.filepath, primary.disease, sample.type.id, cluster.size = 40){
+    cat("\n\t*** Welcome to MIRRETI ***\n\n")
+  
+  # Step 1: Reading in the data
+  data <- read.mirreti.data(mir.filepath, tpm.filepath, interactions.filepath, sampleannot.filepath)
+  mir_expr <- data[[1]]
+  tpm_expr <- data[[2]]
+  interactions <- data[[3]]
+  sample_annotation <- data[[4]]
+
+  # Step 2: Preprocessing the data
+  data <- preproc(mir_expr, tpm_expr, interactions, sample_annotation, primary.disease, sample.type.id)
+  mir_expr <- data[[1]]
+  tpm_expr <- data[[2]]
+  interactions <- data[[3]]
+  interactions_matrix <- data[[4]]
+  
+  # Step 3: Run SPONGE interaction filter and combine with annotation
+  candidates <- sponge.filter(tpm_expr, mir_expr, interactions_matrix)
+  candidates <- merge(candidates, interactions, by = c("miRNA", "ensembl_transcript_id"))
+
+    cat("\t*** END OF THE MIRRETI RUNTIME ANALYSIS ***")
+  
+  return(candidates)
+}
 
 # #' Retrieve a list of TCGA samples filtered for primary disease type and sample type.
 # #' NOTE: If you don not know which values to use for primary_disease and sample_type_id, use retrieve_TCGA_sample_list(sample_annotation)

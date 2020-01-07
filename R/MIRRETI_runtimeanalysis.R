@@ -1,13 +1,41 @@
 library(rslurm)
 library(SPONGE)
+library(doParallel)
+library(ggplot2)
 
+#sponge.runtime(40)
+#spongefilter_runtimes <-  add.to.runtimes()
+
+# HARDCODED!
+add.to.runtimes <- function(){
+  spongefilter_timetable_temp <- readRDS("~/bachelor/data/thirdShot/spongefilter_timetable_temp.RDS")
+  spongefilter_runtimes <- rbind(spongefilter_runtimes, spongefilter_timetable_temp)
+  return(spongefilter_runtimes)
+}
+
+
+# HARDCODED!
+plot.runtimes <- function(runtimes){
+  runtimes <- spongefilter_runtimes
+  runtimes$runtime <- as.numeric(runtimes$runtime)
+  runtimes <- runtimes[runtimes$clusters == 40 & (runtimes$runtime < 441 | runtimes$runtime > 442), ]
+  lm <- lm(runtime ~ tpm_size, data = runtimes)
+  nlm <- lm(runtime ~ tpm_size + I(tpm_size*log(tpm_size)), data=runtimes)
+  runtimes <- mutate(runtimes, model = predict(nlm))
+  ggplot(runtimes, aes(x = tpm_size, y = runtime)) + geom_point() + geom_smooth(method = "lm", se = F)
+  ggplot(runtimes) + geom_point(aes(tpm_size, runtime)) + geom_line(aes(tpm_size,model), color="blue")
+  # tpm_size = 15834
+  predict(nlm, newdata = list(tpm_size=15834))
+}
 
 #---------------------------------------------------------------------------
 #                               Main methode
 #---------------------------------------------------------------------------
 
-sponge.runtime <- function(dragonball){
-  source("/nfs/home/students/evelyn/bachelor/R_workspace/MIRRETI/R/MIRRETI.R")
+# OUTDATED!
+sponge.runtime <- function(cluster.size){
+    cat("\n\t*** Welcome to the MIRRETI runtime analysis ***\n\n")
+    source("/nfs/home/students/evelyn/bachelor/R_workspace/MIRRETI/R/MIRRETI.R")
   mir.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/pancanMiRs_EBadjOnProtocolPlatformWithoutRepsWithUnCorrectMiRs_08_04_16.xena"
   tpm.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/tcga_Kallisto_tpm"
   utr5.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_5UTR.txt"
@@ -16,15 +44,26 @@ sponge.runtime <- function(dragonball){
   sampleannot.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/TCGA_phenotype_denseDataOnlyDownload.tsv"
   primary.disease <- "breast invasive carcinoma"
   sample.type.id = "01"
-  out.filepath <- "/nfs/home/students/evelyn/bachelor/data/thirdShot/spongefilter_time_table.RDS"
+  out.filepath <- "/nfs/home/students/evelyn/bachelor/data/thirdShot/spongefilter_timetable_temp.RDS"
+  cluster.size <- 10
   
+    start.time <- Sys.time()
+    cat("______________________________________________________________________\n")
+    cat(paste(start.time, "Start reading the data...\n", sep = "\t"))
   mir_expr <- read.expression.file(mir.filepath)
   tpm_expr <- read.expression.file(tpm.filepath)
   interactions <- read.interaction.files(utr5.filepath = utr5.filepath,
                                          cds.filepath = cds.filepath,
                                          utr3.filepath = utr3.filepath)
   sample_annotation <- read.sample.annotation.file(sampleannot.filepath)
+    end.time <- Sys.time()
+    diff.time <- difftime(end.time, start.time, units = "secs")
+    cat(paste(end.time, "\tFinished reading the data\nTotal procession time:\t", diff.time, " SECS\n\n", sep = ""))
   
+  
+    start.time <- Sys.time()
+    cat("______________________________________________________________________\n")
+    cat(paste(start.time, "Start preprocessing the data...\n", sep = "\t"))
   interactions <- preproc.idconversion.refseqtoensembl(interactions)
   box <- preproc.filter.samples(mir_expr, tpm_expr, sample_annotation, primary.disease, sample.type.id)
   mir_expr <- preproc.filter.variance(preproc.filter.na(box[[1]], 0))
@@ -33,25 +72,43 @@ sponge.runtime <- function(dragonball){
   mir_expr <- box[[1]]
   tpm_expr <- box[[2]]
   interactions <- box[[3]]
+    end.time <- Sys.time()
+    diff.time <- difftime(end.time, start.time, units = "secs")
+    cat(paste(end.time, "\tFinished preprocessing the data\nTotal procession time:\t", diff.time, " SECS\n\n", sep = ""))
+  
   
   # 10, 50, 100, 500, 1000, 1500, 2500, 5000
-  sampling <- c(10, 50, 100, 500, 1000, 1500, 2500, 5000)
+  sampling <- c(10)
   runtime_table <- NULL
   
   for(s in sampling){
+      start.time <- Sys.time()
+      cat("______________________________________________________________________\n")
+      cat(paste(start.time, "\tStart subsetting the data for ", s, " most variant transcripts...\n", sep = ""))
     t <- preproc.rowsubset.variance(tpm_expr, s)
     box <- preproc.data.spongefilter(mir_expr, t, interactions)
     m <- box[[1]]
     t <- box[[2]]
     i <- box[[3]]
+      end.time <- Sys.time()
+      diff.time <- difftime(end.time, start.time, units = "secs")
+      cat(paste(end.time, "\tFinished subsetting the data for ", s, " most variant transcripts\nTotal procession time:\t", diff.time, " SECS\n", sep = ""))
+      cat(paste(" tpm_size:", s, "\n", sep = "\t"))
+      cat(paste(" tpm_expr:", dim(t), "\n", sep = "\t"))
+      cat("\n")
     
-    cat(paste("tpm_size:", s, "\n", sep = "\t"))
-    cat(paste("tpm_expr:", dim(t), "\n", sep = "\t"))
     
-    start.time <- Sys.time()
-    candidates <- sponge.filter(t, m, i)
-    end.time <- Sys.time()
-    df <- data.frame("tpm_size" = s, "runtime" = end.time - start.time)
+      start.time <- Sys.time()
+      cat("______________________________________________________________________\n")
+      cat(paste(start.time, "\tStart sponge filter for ", s, " most variant transcripts on ", cluster.size, " cluster...\n", sep = ""))
+        cl <- makePSOCKcluster(cluster.size)
+        registerDoParallel(cl)
+    candidates <- sponge.filter(t, m, i, cluster.size)
+        stopCluster(cl)
+      end.time <- Sys.time()
+      diff.time <- difftime(end.time, start.time, units = "secs")
+      cat(paste(end.time, "\tFinished sponge filter for ", s, " most variant transcripts\nTotal procession time:\t", diff.time, " SECS\n\n", sep = ""))
+    df <- data.frame("tpm_size" = s, "runtime" = diff.time, "clusters" = cluster.size)
     
     if(is.null(runtime_table)){
       runtime_table <- df
@@ -61,14 +118,14 @@ sponge.runtime <- function(dragonball){
   }
   
   saveRDS(runtime_table, file = out.filepath)
+  cat("\t*** END OF THE MIRRETI RUNTIME ANALYSIS ***")
 }
 
 
 #---------------------------------------------------------------------------
 #                             Slurm job request
 #---------------------------------------------------------------------------
-
-sjob <- slurm_apply(sponge.runtime, params = data.frame("dragonball" = TRUE), jobname = "runtime analysis sponge",
-                    nodes = 1, cpus_per_node = 40)
+sjob <- slurm_apply(sponge.runtime, params = data.frame("cluster.size" = 25), jobname = "runtime_analysis_sponge_6",
+                    nodes = 1, cpus_per_node = 25)
 results <- get_slurm_out(sjob, outtype = "raw")
 results
