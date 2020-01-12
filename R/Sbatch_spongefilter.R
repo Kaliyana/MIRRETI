@@ -1,5 +1,4 @@
 library(rslurm)
-library(SPONGE)
 
 
 #---------------------------------------------------------------------------
@@ -7,26 +6,23 @@ library(SPONGE)
 #---------------------------------------------------------------------------
 
 
-spongefilter <- function(preprocessed_data, coefficient.direction, out_file){
-  load(as.character(preprocessed_data))
-  mir_expr <- as.matrix(mir_expr)
-  tpm_expr <- as.matrix(tpm_expr)
-  interactions_matrix <- as.matrix(interactions_matrix)
-  interaction_candidates_filtered <- sponge_gene_miRNA_interaction_filter(gene_expr = tpm_expr,
-                                                                          mir_expr = mir_expr,
-                                                                          mir_predicted_targets = interactions_matrix,
-                                                                          coefficient.direction = as.character(coefficient.direction))
-  saveRDS(interaction_candidates_filtered, file = as.character(out_file))
+spongefilter <- function(dragonball){
+  source("/nfs/home/students/evelyn/bachelor/R_workspace/MIRRETI/R/MIRRETI.R")
+  mir.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/pancanMiRs_EBadjOnProtocolPlatformWithoutRepsWithUnCorrectMiRs_08_04_16.xena"
+  tpm.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/tcga_Kallisto_tpm"
+  utr5.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_5UTR.txt"
+  cds.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_CDS.txt"
+  utr3.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_3UTR.txt"
+  sampleannot.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/TCGA_phenotype_denseDataOnlyDownload.tsv"
+  primary.disease <- "breast invasive carcinoma"
+  sample.type.id = "01"
+
+  candidates <- mirreti(mir.filepath, tpm.filepath, list(utr5.filepath, cds.filepath, utr3.filepath),
+                        sampleannot.filepath, primary.disease, sample.type.id, cluster.size = 25, top.number = 100)
+  
+  saveRDS(candidates, file = "/nfs/home/students/evelyn/bachelor/data/thirdShot/SPONGE_candidates_2.RDS")
 }
 
-
-
-#---------------------------------------------------------------------------
-#                               Parameters
-#---------------------------------------------------------------------------
-
-
-spongefilter.parameters <- as.data.frame(read.csv("/nfs/home/students/evelyn/bachelor/R_workspace/MIRRETI/params/SPONGEfilter_filetable.tsv", sep = "\t", header = T))
 
 
 #---------------------------------------------------------------------------
@@ -34,7 +30,7 @@ spongefilter.parameters <- as.data.frame(read.csv("/nfs/home/students/evelyn/bac
 #---------------------------------------------------------------------------
 
 
-sjob <- slurm_apply(spongefilter, params = spongefilter.parameters, jobname = "sponge interaction filter",
-                    nodes = 1, cpus_per_node = 40)
+sjob <- slurm_apply(spongefilter, params = data.frame(dragonball = TRUE), jobname = "sponge_interaction_filter_singlesubset_2",
+                    nodes = 1, cpus_per_node = 25)
 results <- get_slurm_out(sjob, outtype = "raw")
 results

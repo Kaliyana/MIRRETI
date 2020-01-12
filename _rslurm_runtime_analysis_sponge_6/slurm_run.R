@@ -5,17 +5,21 @@ library(utils, quietly = TRUE)
 library(grDevices, quietly = TRUE)
 library(graphics, quietly = TRUE)
 library(stats, quietly = TRUE)
-library(data.table, quietly = TRUE)
 library(rslurm, quietly = TRUE)
+library(SPONGE, quietly = TRUE)
+library(foreach, quietly = TRUE)
+library(iterators, quietly = TRUE)
+library(parallel, quietly = TRUE)
+library(doParallel, quietly = TRUE)
 .rslurm_func <- readRDS('f.RDS')
 .rslurm_params <- readRDS('params.RDS')
 .rslurm_id <- as.numeric(Sys.getenv('SLURM_ARRAY_TASK_ID'))
-.rslurm_istart <- .rslurm_id * 4 + 1
-.rslurm_iend <- min((.rslurm_id + 1) * 4, nrow(.rslurm_params))
+.rslurm_istart <- .rslurm_id * 25 + 1
+.rslurm_iend <- min((.rslurm_id + 1) * 25, nrow(.rslurm_params))
 .rslurm_result <- do.call(parallel::mcmapply, c(
     FUN = .rslurm_func,
     .rslurm_params[.rslurm_istart:.rslurm_iend, , drop = FALSE],
-    mc.cores = 4,
+    mc.cores = 25,
     mc.preschedule = TRUE,
     SIMPLIFY = FALSE))
 
