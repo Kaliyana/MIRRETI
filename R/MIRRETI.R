@@ -249,6 +249,7 @@ preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary
     mir_expr <- box[[1]]
     tpm_expr <- box[[2]]
     interactions <- box[[3]]
+    cat(paste("Produced subset of ", top.number, " most variant transcripts\n", sep = ""))
   }
   
   # Step 5: METHOD TANGLING (not usefull but needed for runtime analysis; Redo it!)
@@ -366,6 +367,22 @@ mirreti <- function(mir.filepath, tpm.filepath, interactions.filepath, sampleann
   
   return(candidates)
 }
+
+
+
+#Step 4: Map candidates to exon model
+ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+  # 'ensembl_transcript_id', 'ensembl_exon_id', 'start_position', 'end_position', 'transcript_start', 'transcript_end', 'transcription_start_site', 'exon_chrom_start', 'exon_chrom_end'
+mappings <- getBM(attributes = c('refseq_mrna', 'ensembl_transcript_id', 'ensembl_exon_id', 'start_position', 'end_position', 'transcript_start', 'transcript_end', 'transcription_start_site'),
+                  filters = 'refseq_mrna',
+                  values = unique(SPONGE_candidates_breastcancer_primarytumor$mRNA),
+                  mart = ensembl)
+temp <- getBM(attributes = c('ensembl_exon_id', 'exon_chrom_start', 'exon_chrom_end'),
+              filters = 'ensembl_exon_id',
+              values = unique(mappings$ensembl_exon_id),
+              mart = ensembl)
+mappings <- merge(mappings, temp, by = "ensembl_exon_id")
+
 
 # #' Retrieve a list of TCGA samples filtered for primary disease type and sample type.
 # #' NOTE: If you don not know which values to use for primary_disease and sample_type_id, use retrieve_TCGA_sample_list(sample_annotation)
