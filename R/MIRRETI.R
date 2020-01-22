@@ -263,7 +263,7 @@ preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary
 
 
 #-------------------------------------------------------------------------------------
-#                               Preprocess methods
+#                               SPONGE methods
 #-------------------------------------------------------------------------------------
 
 
@@ -316,6 +316,82 @@ sponge.filter <- function(tpm_expr, mir_expr, interactions_matrix, cluster.size 
 
 
 #-------------------------------------------------------------------------------------
+#                                   Position analysis
+#-------------------------------------------------------------------------------------
+
+
+build.exon.modell <- function(interactions){
+  ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+  mrna_annot <- getBM(attributes = c('refseq_mrna', 'ensembl_transcript_id', 'ensembl_exon_id', 'transcript_start', 'transcript_end'),
+                                filters = 'refseq_mrna',
+                                values = unique(interactions$mRNA),
+                                mart = ensembl)
+  mrna_annot_predicted <- getBM(attributes = c('refseq_mrna_predicted', 'ensembl_transcript_id', 'ensembl_exon_id', 'transcript_start', 'transcript_end'),
+                                          filters = 'refseq_mrna_predicted',
+                                          values = unique(interactions$mRNA),
+                                          mart = ensembl)
+  colnames(mrna_annot) <- c("mRNA", "ensembl_transcript_id", "ensembl_exon_id", "transcript_start", "transcript_end")
+  colnames(mrna_annot_predicted) <- c("mRNA", "ensembl_transcript_id", "ensembl_exon_id", "transcript_start", "transcript_end")
+  mrna_annot <- rbind(transcriptomic_annot, transcriptomic_annot_predicted)
+  exonic_annot <- getBM(attributes = c('ensembl_exon_id', 'exon_chrom_start', 'exon_chrom_end'),
+                        filters = 'ensembl_exon_id',
+                        values = unique(mrna_annot$ensembl_exon_id),
+                        mart = ensembl)
+  annotation <- merge(mrna_annot, exonic_annot, by = "ensembl_exon_id")
+  annotation$exon_transcript_start <- annotation$exon_chrom_start - annotation$transcript_start + 1
+  annotation$exon_transcript_end <- annotation$exon_chrom_end - annotation$transcript_start + 1
+  annotation$exon_length <- annotation$exon_transcript_end - annotation$exon_transcript_start
+}
+
+
+# STILL WRONG
+determine.exonids <- function(candidates, annotation){
+  
+  # Step 1: Transform candidate position data
+  candidates$binding_site_start <- sapply(strsplit(candidates$binding_site, ","), "[", 1)
+  candidates$binding_site_end <- sapply(strsplit(candidates$binding_site, ","), "[", 2)
+  candidates <- select(candidates, miRNA, mRNA, ensembl_transcript_id, Genesymbol, genomic_region, binding_site_start, binding_site_end, binding_probability, coefficient, correlation)
+  candidates$ensembl_transcript_id <- as.character(candidates$ensembl_transcript_id)
+  
+  # Step 2: Retrieve ensembl annotation data on transcriptomic and exonic positions
+  ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+  # 'ensembl_transcript_id', 'ensembl_exon_id', 'start_position', 'end_position', 'transcript_start', 'transcript_end', 'transcription_start_site', 'exon_chrom_start', 'exon_chrom_end'
+  transcriptomic_annot <- getBM(attributes = c('refseq_mrna', 'ensembl_transcript_id', 'ensembl_exon_id', 'transcript_start', 'transcript_end'),
+                                filters = 'refseq_mrna',
+                                values = unique(candidates$mRNA),
+                                mart = ensembl)
+  transcriptomic_annot_predicted <- getBM(attributes = c('refseq_mrna_predicted', 'ensembl_transcript_id', 'ensembl_exon_id', 'transcript_start', 'transcript_end'),
+                                          filters = 'refseq_mrna_predicted',
+                                          values = unique(candidates$mRNA),
+                                          mart = ensembl)
+  colnames(transcriptomic_annot) <- c("mRNA", "ensembl_transcript_id", "ensembl_exon_id", "transcript_start", "transcript_end")
+  colnames(transcriptomic_annot_predicted) <- c("mRNA", "ensembl_transcript_id", "ensembl_exon_id", "transcript_start", "transcript_end")
+  transcriptomic_annot <- rbind(transcriptomic_annot, transcriptomic_annot_predicted)
+  transcriptomic_annot <- transcriptomic_annot[transcriptomic_annot$ensembl_transcript_id %in% candidates$ensembl_transcript_id, ]
+  exonic_annot <- getBM(attributes = c('ensembl_exon_id', 'exon_chrom_start', 'exon_chrom_end'),
+                        filters = 'ensembl_exon_id',
+                        values = unique(transcriptomic_annot$ensembl_exon_id),
+                        mart = ensembl)
+  annotation <- merge(transcriptomic_annot, exonic_annot, by = "ensembl_exon_id")
+  
+  # Step 3: Transform annotation position data
+  annotation$exon_transcript_start <- annotation$exon_chrom_start - annotation$transcript_start + 1
+  annotation$exon_transcript_end <- annotation$exon_chrom_end - annotation$transcript_start + 1
+  annotation$exon_length <- annotation$exon_transcript_end - annotation$exon_transcript_start
+  annotation <- select(annotation, mRNA, ensembl_transcript_id, ensembl_exon_id, exon_transcript_start, exon_transcript_end)
+  annotation$ensembl_transcript_id <- as.character(annotation$ensembl_transcript_id)
+  
+  
+  temp <- merge(candidates, annotation, by = "ensembl_transcript_id")
+  temp$matched <- temp$binding_site_start >= temp$exon_transcript_start && 
+    temp$binding_site_start < temp$exon_transcript_end && 
+    temp$binding_site_end > temp$exon_transcript_start && 
+    temp$binding_site_end <= temp$exon_transcript_end
+}
+
+
+
+#-------------------------------------------------------------------------------------
 #                                     MIRRETI method
 #-------------------------------------------------------------------------------------
 
@@ -363,6 +439,9 @@ mirreti <- function(mir.filepath, tpm.filepath, interactions.filepath, sampleann
   candidates <- sponge.filter(tpm_expr, mir_expr, interactions_matrix, cluster.size)
   candidates <- merge(candidates, interactions, by = c("miRNA", "ensembl_transcript_id"))
 
+  #Step 4: Map candidates to exon model
+  candidates <- filter.for.exonposition(candidates)
+  
     cat("\t*** END OF THE MIRRETI RUNTIME ANALYSIS ***")
   
   return(candidates)
@@ -370,18 +449,6 @@ mirreti <- function(mir.filepath, tpm.filepath, interactions.filepath, sampleann
 
 
 
-#Step 4: Map candidates to exon model
-ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
-  # 'ensembl_transcript_id', 'ensembl_exon_id', 'start_position', 'end_position', 'transcript_start', 'transcript_end', 'transcription_start_site', 'exon_chrom_start', 'exon_chrom_end'
-mappings <- getBM(attributes = c('refseq_mrna', 'ensembl_transcript_id', 'ensembl_exon_id', 'start_position', 'end_position', 'transcript_start', 'transcript_end', 'transcription_start_site'),
-                  filters = 'refseq_mrna',
-                  values = unique(SPONGE_candidates_breastcancer_primarytumor$mRNA),
-                  mart = ensembl)
-temp <- getBM(attributes = c('ensembl_exon_id', 'exon_chrom_start', 'exon_chrom_end'),
-              filters = 'ensembl_exon_id',
-              values = unique(mappings$ensembl_exon_id),
-              mart = ensembl)
-mappings <- merge(mappings, temp, by = "ensembl_exon_id")
 
 
 # #' Retrieve a list of TCGA samples filtered for primary disease type and sample type.
