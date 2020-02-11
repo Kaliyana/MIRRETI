@@ -33,7 +33,10 @@ sample_annotation <- read.sample.annotation.file("/nfs/home/students/evelyn/bach
 
 
 mirreti.breastinvasivecarcinoma <- function(mir_expr, tpm_expr, interactions, sample_annotation){
-  interactions <- preproc.idconversion.refseqtoensembl(interactions)  # 116.529.799 obs. 7 variables
+  interactions <- preproc.idconversion.refseqtoensembl(interactions = interactions,
+                                                       ensembl_mart = ensembl_mart_92,
+                                                       id.type = 'both',
+                                                       log=TRUE)                        # 116.529.799 obs. 7 variables
   
   box <- preproc.filter.samples(mir_expr, tpm_expr, sample_annotation, primary.disease = "breast invasive carcinoma", sample.type.id = "01")
   mir_expr <- box[[1]]                                # 743 obs. 90 variables

@@ -6,7 +6,7 @@ library(rslurm)
 #---------------------------------------------------------------------------
 
 
-spongefilter <- function(dragonball){
+mirreti <- function(dragonball){
   set.seed(01101990)
   source("/nfs/home/students/evelyn/bachelor/R_workspace/MIRRETI/R/MIRRETI.R")
   mir.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/pancanMiRs_EBadjOnProtocolPlatformWithoutRepsWithUnCorrectMiRs_08_04_16.xena"
@@ -16,8 +16,16 @@ spongefilter <- function(dragonball){
   utr3.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_3UTR.txt"
   sampleannot.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/TCGA_phenotype_denseDataOnlyDownload.tsv"
   primary.disease <- "breast invasive carcinoma"
-  sample.type.id = "01"
-  ensembl_mart <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://apr2018.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")
+  sample.type.id = "11"
+  
+  #ensembl_mart <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://apr2018.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")     # vers 92
+  ensembl_mart <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")                                                               # vers 99
+  
+  outfile <- paste("/nfs/home/students/evelyn/bachelor/data/thirdShot/candidate/events_with_tpms/mirreti_datapack_",
+                   gsub(" ", "", primary.disease), "_", 
+                   sample.type.id, "_",
+                   gsub(" ", "", listEnsembl(ensembl_mart)$version[1]), ".RDS", sep = "")
+  
 
   data <- mirreti(mir.filepath = mir.filepath, 
                   tpm.filepath = tpm.filepath,
@@ -27,12 +35,10 @@ spongefilter <- function(dragonball){
                   sample.type.id = sample.type.id,
                   cluster.size = 25,
                   ensembl_mart = ensembl_mart)
-  candidates <- data[[1]]
-  interactions <- data[[2]]
-  mir_expr <- data[[3]]
-  tpm_expr <- data[[4]]
+  candidate_events <- data[[1]]
+  tpm_expr <- data[[2]]
   
-  save(candidates, interactions, mir_expr, tpm_expr, file = "/nfs/home/students/evelyn/bachelor/data/thirdShot/mirreti_datapack_breastcancer_primarytumor_vers92.RDS")
+  save(candidate_events, tpm_expr, file = outfile)
 }
 
 
@@ -42,7 +48,7 @@ spongefilter <- function(dragonball){
 #---------------------------------------------------------------------------
 
 
-sjob <- slurm_apply(spongefilter, params = data.frame(dragonball = TRUE), jobname = "mirreti_ensemblversion92",
+sjob <- slurm_apply(mirreti, params = data.frame(dragonball = TRUE), jobname = "mirreti_breastcancer_11_vers99",
                     nodes = 1, cpus_per_node = 25)
 results <- get_slurm_out(sjob, outtype = "raw")
 results
