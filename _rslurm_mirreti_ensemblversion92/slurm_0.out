@@ -40,3 +40,9 @@ Report on data dimensions handed to SPONGE interaction filter
 
 ______________________________________________________________________
 2020-01-29 04:15:24		Start running the SPONGE interaction filter on 25 cluster...
+2020-01-29 07:46:11 			Finished the SPONGE interaction filter step for negativ correlation
+2020-01-29 11:14:49 			Finished the SPONGE interaction filter step for positiv correlation
+2020-01-29 11:14:50		Finished total run of the SPONGE interaction filter
+=> Total procession time:	25166.3200333118 SECS
+
+	*** END OF THE MIRRETI RUNTIME ANALYSIS ***
