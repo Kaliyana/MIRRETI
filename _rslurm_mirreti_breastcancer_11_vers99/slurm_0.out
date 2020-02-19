@@ -22,31 +22,31 @@ The following objects are masked from ‘package:purrr’:
 				*** Welcome to MIRRETI ***
 
 ______________________________________________________________________
-2020-02-11 13:47:28		Start reading the data...
-2020-02-11 13:48:53		Finished reading the data
-=> Total procession time:	84.9869601726532 SECS
+2020-02-11 17:07:23		Start reading the data...
+2020-02-11 17:11:44		Finished reading the data
+=> Total procession time:	261.094892978668 SECS
 
 ______________________________________________________________________
-2020-02-11 13:48:53		Start preprocessing the data...
+2020-02-11 17:11:44		Start preprocessing the data...
 Cache found
 Cache found
-2020-02-11 13:50:11		Finished preprocessing the data
-=> Total procession time:	77.398788690567 SECS
+2020-02-11 17:12:54		Finished preprocessing the data
+=> Total procession time:	70.1255874633789 SECS
 
 Report on data dimensions handed to SPONGE interaction filter
-	-> miRNA:  1044  samples &  371  columns
-	-> transcripts:  1044  rows &  16389  columns
-	-> interactions:  16389  rows &  371  columns
+	-> miRNA:  89  samples &  378  columns
+	-> transcripts:  89  rows &  16010  columns
+	-> interactions:  16010  rows &  378  columns
 
 ______________________________________________________________________
-2020-02-11 13:50:11		Start running the SPONGE interaction filter on 25 cluster...
-2020-02-11 17:17:33 			Finished the SPONGE interaction filter step for negativ correlation
-2020-02-11 20:43:58 			Finished the SPONGE interaction filter step for positiv correlation
-2020-02-11 20:43:59		Finished total run of the SPONGE interaction filter
-=> Total procession time:	24828.2872638702 SECS
+2020-02-11 17:12:55		Start running the SPONGE interaction filter on 25 cluster...
+2020-02-11 17:41:42 			Finished the SPONGE interaction filter step for negativ correlation
+2020-02-11 18:09:12 			Finished the SPONGE interaction filter step for positiv correlation
+2020-02-11 18:09:14		Finished total run of the SPONGE interaction filter
+=> Total procession time:	3379.68959212303 SECS
 
 ______________________________________________________________________
-2020-02-11 20:43:59		Start enriching the exon model...
+2020-02-11 18:09:14		Start enriching the exon model...
 Error: biomaRt has encountered an unexpected server error.
 Consider trying one of the Ensembl mirrors (for more details look at ?useEnsembl)
 Execution halted
