@@ -1,11 +1,10 @@
-library(data.table)
+library(data.table)   # MANDATORY! - fread()
 library(graphics)
 library(tidyverse)
-library(dplyr)
-library(biomaRt)
-library(rentrez)
-library(SPONGE)
-library(doParallel)
+library(dplyr)        # MANDATORY! - select(), mutate_all()
+library(biomaRt)      # MANDATORY! - useMart(), getBM(), listMarts()
+library(SPONGE)       # MANDATORY!
+library(doParallel)   # MANDATORY!
 library(plyr)
 
 
@@ -20,7 +19,7 @@ coredata <- function(){
   primary.disease <- "breast invasive carcinoma"
   sample.type.id <- "01"
   ensembl_mart <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://jan2020.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")
-  ensembl_mart_92 <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://apr2018.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")
+  ensembl_mart <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://apr2018.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")
   
   rm(mir.filepath, tpm.filepath, interactions.filepath, sampleannot.filepath)
   rm(primary.disease, sample.type.id)
@@ -59,14 +58,15 @@ mirreti <- function(mir.filepath, tpm.filepath, interactions.filepath, sampleann
       start.time <- Sys.time()
       cat("______________________________________________________________________\n")
       cat(paste(start.time, "\t\tStart preprocessing the data...\n", sep = ""))
-  data <- preproc(mir_expr = mir_expr,
-                  tpm_expr = tpm_expr,
-                  interactions = interactions,
+  data <- preproc(mir_expr = show_mir_expr,
+                  tpm_expr = show_tpm_expr,
+                  interactions = show_interactions,
                   sample_annotation = sample_annotation,
                   primary.disease = primary.disease,
                   sample.type.id = sample.type.id,
                   ensembl_mart = ensembl_mart, 
-                  top.number = NULL)
+                  top.number = NULL,
+                  log = TRUE)
   mir_expr <- data[[1]]
   tpm_expr <- data[[2]]
   interactions <- data[[3]]
@@ -127,12 +127,6 @@ read.interaction.files <- function(utr5.filepath, cds.filepath, utr3.filepath){
 read.sample.annotation.file <- function(sampleannotation.filepath){
   sample_annotation <- read.csv(sampleannotation.filepath, header = T, sep = "\t")
   return(sample_annotation)
-}
-
-read.gtf.file <- function(gtf.filepath){
-  gtf <- fread(input = "/nfs/home/students/evelyn/bachelor/data/core_data/Homo_sapiens.GRCh38.99.gtf", sep = "\t", header = F)
-  colnames(gtf) <- c('seqname', 'source', 'feature', 'start', 'end', 'score', 'strand', 'frame', 'attribute')
-  return(gtf)
 }
   
 # MASTER METHOD
@@ -330,11 +324,29 @@ preproc.data.spongefilter <- function(mir_expr, tpm_expr, interactions){
 
 
 # MASTER METHOD
-preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary.disease, sample.type.id, ensembl_mart = NULL, top.number = NULL){
+preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary.disease, sample.type.id, ensembl_mart = NULL, top.number = NULL, log = FALSE){
     
+  if(log){
+    cat("\nMIRRETI data preprocess report\n")
+    cat("-Summary of the input data-\n")
+    cat(paste("\tmir_expr: ", nrow(mir_expr), " miRNAs and ", ncol(mir_expr), " samples\n"), sep = "")
+    cat(paste("\ttpm_expr: ", nrow(tpm_expr), " transcripts and ", ncol(tpm_expr), " samples\n"), sep = "")
+    cat(paste("\tinteractions: ", uniqueN(interactions$miRNA), " miRNAs, ", uniqueN(interactions$mRNA), " mRNAs and ", nrow(interactions), "miRNA-mRNA interactions\n"), sep = "")
+    cat(paste("\tprimary disease: ", primary.disease, "\n"), sep = "")
+    cat(paste("\tsample condition: ", sample.type.id, "\n"), sep = "")
+    cat(paste("\tEnsembl version: ", listMarts(ensembl_mart)[1,2], "\n\n"), sep = "")
+  }
+  
   # Step 1: ID conversion  
   interactions <- preproc.idconversion.refseqtoensembl(interactions = interactions,
                                                        ensembl_mart = ensembl_mart)
+  if(log){
+    cat("-Log of RefSeq to Ensembl ID conversion of the interactions data-\n")
+    cat(paste("\tmiRNAs: ", uniqueN(interactions$miRNA), "\n"), sep = "")
+    cat(paste("\tmRNAs: ", uniqueN(interactions$mRNA), "\n"), sep = "")
+    cat(paste("\ttranscripts: ", uniqueN(interactions$ensembl_transcript_id), "\n"), sep = "")
+    cat(paste("\tmiRNA-mRNA interactions: ", nrow(interactions), "\n\n"), sep = "")
+  }
   
   # Step 2: Extract samples for specific disease and sample type
   box <- preproc.filter.samples(mir_expr = mir_expr,
@@ -342,12 +354,22 @@ preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary
                                 sample_annotation = sample_annotation,
                                 primary.disease = primary.disease,
                                 sample.type.id = sample.type.id)
+  if(log){
+    cat("-Log of expression data sample extraction based on primary disease and sample condition-\n")
+    cat(paste("\tmir_expr: ", nrow(box[[1]]), " miRNAs and ", ncol(box[[1]]), " samples\n"), sep = "")
+    cat(paste("\ttpm_expr: ", nrow(box[[2]]), " transcripts and ", ncol(box[[2]]), " samples\n\n"), sep = "")
+  }
   
   # Step 3: Filter expression data for NAs and variance
   mir_expr <- preproc.filter.variance(preproc.filter.na(expr_data = box[[1]],
                                                         na.equivalent = 0))
   tpm_expr <- preproc.filter.variance(preproc.filter.na(expr_data = box[[2]], 
                                                         na.equivalent = -9.9658))
+  if(log){
+    cat("-Log of filtering expression data for NAs and variance-\n")
+    cat(paste("\tmir_expr: ", nrow(mir_expr), " miRNAs and ", ncol(mir_expr), " samples\n"), sep = "")
+    cat(paste("\ttpm_expr: ", nrow(tpm_expr), " transcripts and ", ncol(tpm_expr), " samples\n\n"), sep = "")
+  }
   
   # Step 3: Crossfilter data
   box <- preproc.crossfilter(mir_expr = mir_expr,
@@ -377,7 +399,12 @@ preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary
   mir_expr <- box[[1]]
   tpm_expr <- box[[2]]
   interactions_matrix <- box[[3]]
-
+  if(log){
+    cat("Summary of the output data-\n")
+    cat(paste("\tmir_expr: ", ncol(mir_expr), " miRNAs and ", nrow(mir_expr), " samples\n"), sep = "")
+    cat(paste("\ttpm_expr: ", ncol(tpm_expr), " transcripts and ", nrow(tpm_expr), " samples\n"), sep = "")
+    cat(paste("\tinteractions: ", uniqueN(interactions$miRNA), " miRNAs, ", uniqueN(interactions$mRNA), " mRNAs, ", uniqueN(interactions$ensembl_transcript_id), " transcripts and ", nrow(interactions), "miRNA-mRNA interactions\n\n"), sep = "")
+  }
   return(list(mir_expr, tpm_expr, interactions, interactions_matrix))
 }
 
@@ -434,22 +461,112 @@ sponge.filter <- function(tpm_expr, mir_expr, interactions_matrix, cluster.size 
 
 
 #-------------------------------------------------------------------------------------
+#                                   
+#-------------------------------------------------------------------------------------
+
+
+mirreti.build.correlationtable <- function(candidates, interactions){
+  interactions_mrnamirna_pairs <- as.character(unique(paste(interactions$miRNA, interactions$ensembl_transcript_id, sep = ",")))
+  interactions_correlated <- as.character(unique(paste(candidates$miRNA, candidates$ensembl_transcript_id, sep = ",")))
+  #interactions_correlated <- interactions_correlated %>% mutate_all(as.character)
+  interactions_notCorrelated <- interactions_mrnamirna_pairs[!interactions_mrnamirna_pairs %in% interactions_correlated]
+  interactions_notCorrelated <- data.frame("miRNA" = lapply(strsplit(interactions_notCorrelated, ','), '[', 1),
+                                           "ensembl_transcript_id" = lapply(strsplit(interactions_notCorrelated, ','), '[', 2),
+                                           "coefficient" = rep(0, length(interactions_notCorrelated)),
+                                           "correlation" = rep("-", length(interactions_notCorrelated)))
+  interactions_notCorrelated$miRNA <- as.character(interactions_notCorrelated$miRNA)
+  interactions_notCorrelated$ensembl_transcript_id <- as.character(interactions_notCorrelated$ensembl_transcript_id)
+  correlation_table <- rbind(candidates, interactions_notCorrelated)
+  correlation_table$miRNA <- as.character(correlation_table$miRNA)
+  correlation_table$ensembl_transcript_id <- as.character(correlation_table$ensembl_transcript_id)
+  correlation_table <- merge(interactions, correlation_table, by = c("miRNA", "ensembl_transcript_id"))
+  return(correlation_table)
+      rm(interactions_mrnamirna_pairs, interactions_correlated, interactions_notCorrelated)
+}
+
+# find genes which lose binding sites within isoforms
+mirreti.filter.correlationtable <- function(correlation_table){
+  correlation_table_filtered <- data.frame(matrix(ncol = ncol(correlation_table), nrow = 0))
+  colnames(correlation_table_filtered) <- colnames(correlation_table)
+  
+  for(g in unique(correlation_table$Genesymbol)){
+    sub <- correlation_table[correlation_table$Genesymbol == g, ]
+    
+    if(uniqueN(g_sub$ensembl_transcript_id) <= 1){
+      next()
+    }
+    
+    correlation_table_filtered <- rbind(correlation_table_filtered, sub)
+  }
+  
+  return(correlation_table_filtered)
+}
+
+
+
+tryouts <- function(){
+  psi_table <- data.frame(matrix(ncol = 6, nrow = 0))
+  colnames(psi_table) <- c("Genesymbol", "miRNA", "correlation", "psi", "transcripts", "variants")
+  
+  
+  
+  
+  
+  for(g in unique(correlation_table$Genesymbol)){
+    g_sub <- correlation_table[correlation_table$Genesymbol == g, ]
+    
+    unique(g_sub$correlation)
+    unique(g_sub$ensembl_transcript_id)
+    t1 <- g_sub[g_sub$ensembl_transcript_id == "ENST00000006658", ]
+    t2 <- g_sub[g_sub$ensembl_transcript_id == "ENST00000356488", ]
+    t5 <- g_sub[g_sub$ensembl_transcript_id == "", ]
+    t3 <- t1[!t1$miRNA %in% t2$miRNA, ]
+    t4 <- t2[!t2$miRNA %in% t1$miRNA, ]
+    
+    if(uniqueN(g_sub$ensembl_transcript_id) <= 1 | unique(g_sub$correlation) == "-")
+      next()
+    for(m in unique(g_sub$miRNA)){
+      m_sub <- g_sub[g_sub$miRNA == m, ]
+      
+      for(c in unique(m_sub$correlation)){
+        df <- data.frame("Genesymbol" = m_sub$Genesymbol[1],
+                         "miRNA" = m_sub$miRNA[1],
+                         "correlation" = unique(m_sub$correlation))
+      }
+      
+    }
+    correlation_table_multitranscript <- rbind(correlation_table_multitranscript, sub)
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+#-------------------------------------------------------------------------------------
 #                                   Position analysis
 #-------------------------------------------------------------------------------------
 
 
-suppa.preprocess <- function(interactions, gtf){
-  interaction_transcripts <- unique(interactions$ensembl_transcript_id)
+suppa.preprocess <- function(tpm_expr, gtf, out.filepath){
+  interaction_transcripts <- unique(tpm_expr$ensembl_transcript_id)
   gtf <- gtf[gtf$feature == "exon", ]
   temp <- separate(g, attribute, c("gene_id", "gene_version", "transcript_id", "transcript_version", "exon_number", "gene_name", "gene_source", "gene_biotype", "transcript_name", "transcript_source", "transcript_biotype", "exon_id", "exon_version", "tag", "transcript_support_level"), sep = ";")
   temp$transcript_id <- as.character(lapply(strsplit(temp$transcript_id, ' |\\.|"'), '[', 4))
   g <- gtf[temp$transcript_id %in% interaction_transcripts, ]
 }
 
-suppa.buildgtf <- function(interactions, ensembl_mart = NULL){
+# SUPER COOL METHOD BUT NOT TO BE USED ANYMORE
+buildgtf <- function(ensembl_transcript_ids, ensembl_mart = NULL){
   transcriptomic_gtf <- getBM(attributes = c('chromosome_name', 'source', 'strand', 'ensembl_gene_id_version', 'ensembl_transcript_id_version', 'external_gene_name', 'gene_biotype', 'external_transcript_name', 'transcript_source', 'transcript_biotype', 'ccds', 'ensembl_exon_id', 'transcript_tsl'),
                filters = 'ensembl_transcript_id',
-               values = unique(interactions$ensembl_transcript_id),
+               values = unique(ensembl_transcript_ids),
                mart = ensembl_mart)
   exonic_gtf <- getBM(attributes = c('ensembl_exon_id', 'exon_chrom_start', 'exon_chrom_end', 'rank', 'ensembl_transcript_id_version'),
                       filters = 'ensembl_exon_id',
@@ -474,7 +591,9 @@ suppa.buildgtf <- function(interactions, ensembl_mart = NULL){
 
   gtf <- select(gtf, chromosome_name, source, feature, exon_chrom_start, exon_chrom_end, score, strand, frame, attribute)
   colnames(gtf) <- c("seqname", "source", "feature", "start", "end", "score", "strand", "frame", "attribute")
-  write.table(gtf, file = "/nfs/home/students/evelyn/bachelor/data/core_data/GRCh38.99_ensembl_breastcancer_01.gtf", quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+  # out.filepath <- "/nfs/home/students/evelyn/bachelor/data/thirdShot/suppa/GRCh38.99_ensembl_breastcancer_01/GRCh38.99_ensembl_breastcancer_01"
+  write.table(gtf, file = paste(out.filepath, ".gtf", sep = ""), quote = FALSE, sep = "\t", row.names = FALSE, col.names = FALSE)
+  write.table(t(tpm_expr), file = paste(out.filepath, ".tpm", sep = ""), sep = "\t", quote = FALSE)
   }
 
 

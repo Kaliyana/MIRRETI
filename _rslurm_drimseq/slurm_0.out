@@ -1,0 +1,44 @@
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:data.table’:
+
+    between, first, last
+
+The following object is masked from ‘package:biomaRt’:
+
+    select
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+
+
+MIRRETI DRIMSeq report
+2020-03-03 17:20:48	Start reading the data...
+2020-03-03 17:27:51	Reading data was successfull
+Time required:	422.693757295609 secs
+
+2020-03-03 17:27:51	Start filtering samples and expression data...
+2020-03-03 17:28:03	Filtering samples and expression data was successfull
+Time required:	12.155177116394 secs
+
+2020-03-03 17:28:03	Start building gene model on Ensembl transcripts...
+Cache found
+2020-03-03 17:29:26	Building gene model was successfull
+Time required:	82.499016046524 secs
+
+2020-03-03 17:29:26	Start preparing samples and counts data for differential expression...
+2020-03-03 17:29:30	Preparing data for DRIMSeq was successfull
+Time required:	3.82996082305908 secs
+
+2020-03-03 17:29:30	Start running DRIMSeq...
+! Using a subset of 0.1 genes to estimate common precision !
+
+! Using common_precision = 24.6196 as prec_init !
+

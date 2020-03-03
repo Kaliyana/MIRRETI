@@ -1,5 +1,0 @@
-preprocessed_data	coefficient.direction	out_file
-/nfs/home/students/evelyn/bachelor/data/secondShot/spongerun_data_breastinvasivecarcinome_solidtissuenormal.RDS	>	/nfs/home/students/evelyn/bachelor/data/SPONGE_filtered/hsa_miRWalk_wholeGene_SPONGEcandidates_breastinvasivecarcinoma_solidtissuenormal_ge.RDS
-/nfs/home/students/evelyn/bachelor/data/secondShot/spongerun_data_breastinvasivecarcinome_solidtissuenormal.RDS	<	/nfs/home/students/evelyn/bachelor/data/SPONGE_filtered/hsa_miRWalk_wholeGene_SPONGEcandidates_breastinvasivecarcinoma_solidtissuenormal_le.RDS
-/nfs/home/students/evelyn/bachelor/data/secondShot/spongerun_data_breastinvasivecarcinome_primarytumor.RDS	>	/nfs/home/students/evelyn/bachelor/data/SPONGE_filtered/hsa_miRWalk_wholeGene_SPONGEcandidates_breastinvasivecarcinoma_primarytumor_ge.RDS
-/nfs/home/students/evelyn/bachelor/data/secondShot/spongerun_data_breastinvasivecarcinome_primarytumor.RDS	<	/nfs/home/students/evelyn/bachelor/data/SPONGE_filtered/hsa_miRWalk_wholeGene_SPONGEcandidates_breastinvasivecarcinoma_primarytumor_le.RDS
