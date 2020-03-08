@@ -6,7 +6,7 @@ drimseq <- function(dragonball){
   sampleannot.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/TCGA_phenotype_denseDataOnlyDownload.tsv"
   primary.disease <- "breast invasive carcinoma"
   ensembl_mart <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://jan2020.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")
-  outfile <- paste("/nfs/home/students/evelyn/bachelor/data/thirdShot/datapacks/dimseq-1.0_datapack_",
+  outfile <- paste("/nfs/home/students/evelyn/bachelor/data/thirdShot/datapacks/drimseq-1.0_datapack_",
                    gsub(" ", "", primary.disease), "_", 
                    gsub(" ", "", listEnsembl(ensembl_mart)$version[1]), ".RDS", sep = "")
   

@@ -8,6 +8,7 @@ coredata <- function(){
   sampleannot.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/TCGA_phenotype_denseDataOnlyDownload.tsv"
   primary.disease <- "breast invasive carcinoma"
   ensembl_mart <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://jan2020.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")
+  drimseq <- readRDS("D:/Bioinformatics/Bachelordata/thirdShot/datapacks/drimseq-1.0_breastinvasivecarcinoma_EnsemblGenes99.RDS")
   
   rm(tpm.filepath, sampleannot.filepath)
   rm(primary.disease)
@@ -126,6 +127,23 @@ mirreti.drimseq <- function(tpm.filepath, sampleannot.filepath, primary.disease,
   return(drimseq)
 }
 
+mirreti.drimseq.results <- function(drimseq){
+  plotPValues(drimseq)
+  drimseq@samples[, "condition"] <- factor(drimseq@samples[, "condition"])
+  
+  results <- DRIMSeq::results(drimseq)
+  results <- results[order(results$pvalue, decreasing = FALSE), ]
+  results_txp <- DRIMSeq::results(drimseq, level = "feature")
+  no.na <- function(x) ifelse(is.na(x), 1, x)
+  results$pvalue <- no.na(results$pvalue)
+  results_txp$pvalue <- no.na(results_txp$pvalue)
+  
+  idx <- which(results$adj_pvalue < 0.05)[1]
+  plotProportions(drimseq, 
+                  gene_id = "ENSG00000185624", 
+                  group_variable = "condition")
+}
+
 
 read.expression.file <- function(expression.filepath){
   expr_data <- data.frame(fread(expression.filepath, header = T, sep = "\t"), row.names = 1, check.names = F)
@@ -154,3 +172,6 @@ preproc.filter.variance <- function(expr_data, var.threshold = 0.2){
   expr_data <- expr_data[1:threshold, colnames(expr_data) != 'variance']
   return(expr_data)
 }
+
+mirreti.drimseq.results(drimseq)
+
