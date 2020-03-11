@@ -1,25 +1,30 @@
-library(data.table)
+library(data.table)   # MANDATORY! - fread(), uniqueN(), unique()
 library(graphics)
 library(tidyverse)
-library(dplyr)
-library(biomaRt)
-library(SPONGE)
-library(doParallel)
-#set.seed(01101990)
+library(dplyr)        # MANDATORY! - select(), mutate_all()
+library(biomaRt)      # MANDATORY! - useMart(), getBM(), listMarts()
+library(SPONGE)       # MANDATORY!
+library(doParallel)   # MANDATORY!
+library(plyr)
+library(GenomicRanges)
+
 
 coredata <- function(){
+  set.seed(01101990)
   mir.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/pancanMiRs_EBadjOnProtocolPlatformWithoutRepsWithUnCorrectMiRs_08_04_16.xena"
   tpm.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/tcga_Kallisto_tpm"
-  utr5.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_5UTR.txt"
-  cds.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_CDS.txt"
-  utr3.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_3UTR.txt"
+  interactions.filepath <- list("/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_5UTR.txt",
+                                "/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_CDS.txt",
+                                "/nfs/home/students/evelyn/bachelor/data/core_data/hsa_miRWalk_3UTR.txt")
   sampleannot.filepath <- "/nfs/home/students/evelyn/bachelor/data/core_data/TCGA_phenotype_denseDataOnlyDownload.tsv"
   primary.disease <- "breast invasive carcinoma"
   sample.type.id <- "01"
-  ensembl_mart_99 <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://jan2020.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")
-  ensembl_mart_92 <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://apr2018.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")
+  ensembl_mart <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://jan2020.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")
+  ensembl_mart <- useMart("ENSEMBL_MART_ENSEMBL", host = "http://apr2018.archive.ensembl.org", dataset = "hsapiens_gene_ensembl")
   
-  rm(mir.filepath, tpm.filepath, utr5.filepath, cds.filepath, utr3.filepath,sampleannot.filepath, primary.disease, sample.type.id,ensembl_mart_92, ensembl_mart_99)
+  rm(mir.filepath, tpm.filepath, interactions.filepath, sampleannot.filepath)
+  rm(primary.disease, sample.type.id)
+  rm(ensembl_mart_92, ensembl_mart_99, ensembl_mart)
 }
 
 
@@ -30,13 +35,13 @@ coredata <- function(){
 
 mirreti <- function(mir.filepath, tpm.filepath, interactions.filepath, sampleannot.filepath, primary.disease, sample.type.id, cluster.size = 40, top.number = NULL, ensembl_mart = NULL){
   
-      cat("\n\t\t\t\t*** Welcome to MIRRETI ***\n\n")
+  cat("\n\t\t\t\t*** Welcome to MIRRETI ***\n\n")
   
   
   # Step 1: Reading in the data
-      start.time <- Sys.time()
-      cat("______________________________________________________________________\n")
-      cat(paste(start.time, "\t\tStart reading the data...\n", sep = ""))
+  start.time <- Sys.time()
+  cat("______________________________________________________________________\n")
+  cat(paste(start.time, "\t\tStart reading the data...\n", sep = ""))
   data <- read.mirreti.data(mir.filepath = mir.filepath,
                             tpm.filepath = tpm.filepath,
                             interactions.filepath = interactions.filepath,
@@ -45,70 +50,50 @@ mirreti <- function(mir.filepath, tpm.filepath, interactions.filepath, sampleann
   tpm_expr <- data[[2]]
   interactions <- data[[3]]
   sample_annotation <- data[[4]]
-      end.time <- Sys.time()
-      diff.time <- difftime(end.time, start.time, units = "secs")
-      cat(paste(end.time, "\t\tFinished reading the data\n=> Total procession time:\t", diff.time, " SECS\n\n", sep = ""))
+  end.time <- Sys.time()
+  diff.time <- difftime(end.time, start.time, units = "secs")
+  cat(paste(end.time, "\t\tFinished reading the data\n=> Total procession time:\t", diff.time, " SECS\n\n", sep = ""))
   
   
   # Step 2: Preprocessing the data
-      start.time <- Sys.time()
-      cat("______________________________________________________________________\n")
-      cat(paste(start.time, "\t\tStart preprocessing the data...\n", sep = ""))
-  data <- preproc(mir_expr = mir_expr,
-                  tpm_expr = tpm_expr,
-                  interactions = interactions,
+  start.time <- Sys.time()
+  cat("______________________________________________________________________\n")
+  cat(paste(start.time, "\t\tStart preprocessing the data...\n", sep = ""))
+  data <- preproc(mir_expr = show_mir_expr,
+                  tpm_expr = show_tpm_expr,
+                  interactions = show_interactions,
                   sample_annotation = sample_annotation,
                   primary.disease = primary.disease,
                   sample.type.id = sample.type.id,
                   ensembl_mart = ensembl_mart, 
-                  top.number = NULL)
+                  top.number = NULL,
+                  log = TRUE)
   mir_expr <- data[[1]]
   tpm_expr <- data[[2]]
   interactions <- data[[3]]
   interactions_matrix <- data[[4]]
-      end.time <- Sys.time()
-      diff.time <- difftime(end.time, start.time, units = "secs")
-      cat(paste(end.time, "\t\tFinished preprocessing the data\n=> Total procession time:\t", diff.time, " SECS\n\n", sep = ""))
+  end.time <- Sys.time()
+  diff.time <- difftime(end.time, start.time, units = "secs")
+  cat(paste(end.time, "\t\tFinished preprocessing the data\n=> Total procession time:\t", diff.time, " SECS\n\n", sep = ""))
   
   # Overview on data dimensions
-      cat("Report on data dimensions handed to SPONGE interaction filter\n")
-      cat(paste("\t-> miRNA: ", nrow(mir_expr), " samples & ", ncol(mir_expr), " columns\n"))
-      cat(paste("\t-> transcripts: ", nrow(tpm_expr), " rows & ", ncol(tpm_expr), " columns\n"))
-      cat(paste("\t-> interactions: ", nrow(interactions_matrix), " rows & ", ncol(interactions_matrix), " columns\n\n"))
+  cat("Report on data dimensions handed to SPONGE interaction filter\n")
+  cat(paste("\t-> miRNA: ", nrow(mir_expr), " samples & ", ncol(mir_expr), " columns\n"))
+  cat(paste("\t-> transcripts: ", nrow(tpm_expr), " rows & ", ncol(tpm_expr), " columns\n"))
+  cat(paste("\t-> interactions: ", nrow(interactions_matrix), " rows & ", ncol(interactions_matrix), " columns\n\n"))
   
-    
+  
   # Step 3: Run SPONGE interaction filter and combine with annotation
   # Notifications in sponge.filter()
   candidates <- sponge.filter(tpm_expr = tpm_expr,
                               mir_expr = mir_expr,
-                              interactions_matrix, cluster.size)
-
+                              interactions_matrix =  interactions_matrix,
+                              cluster.size = cluster.size)
   
-  #Step 4: Identify exons where candidate binding sites are located
-      start.time <- Sys.time()
-      cat("______________________________________________________________________\n")
-      cat(paste(start.time, "\t\tStart enriching the exon model...\n", sep = ""))
-  candidate_events <- exon.model.enrich(interactions = interactions,
-                                        candidates = candidates,
-                                        ensembl_mart = ensembl_mart)
-  candidate_events <- candidate_events %>% filter(ensembl_transcript_id_1 %in% colnames(tpm_expr) & transcript_without_exon_and_correlation %in% colnames(tpm_expr)) 
-  tpm_expr <- tpm_expr[ , colnames(tpm_expr) %in% candidate_events$ensembl_transcript_id_1 |
-                          colnames(tpm_expr) %in% candidate_events$transcript_without_exon_and_correlation]
-      end.time <- Sys.time()
-      diff.time <- difftime(end.time, start.time, units = "secs")
-      cat(paste(end.time, "\t\tFinished enriching the exon model\n=> Total procession time:\t", diff.time, " SECS\n\n", sep = ""))
   
-  # Output report
-      temp <- unique(c(as.vector(candidate_events$ensembl_transcript_id_1), as.vector(candidate_events$transcript_without_exon_and_correlation)))
-      cat("Report on MIRRETI output\n")
-      cat(paste("\t", length(temp), " unique transcripts in candidate_events (ensembl_transcript_id_1 & transcript_without_Exon_and_correlation columns)"))
-      cat(paste("\t", ncol(tpm_expr), " unique transcripts in tpm_expr"))
-      cat(paste("\t", length(intersect(temp, colnames(tpm_expr))), " common transcripts between candidate_events & tpm_expr"))
-      
-      
-      cat("\t*** END OF THE MIRRETI RUNTIME ANALYSIS ***")
+  cat("\t*** END OF THE MIRRETI RUNTIME ANALYSIS ***\n\n")
   
-  return(list(candidate_events, tpm_expr))
+  return(list(candidates, interactions, mir_expr, tpm_expr))
 }
 
 
@@ -145,72 +130,6 @@ read.sample.annotation.file <- function(sampleannotation.filepath){
   return(sample_annotation)
 }
 
-read.gtf.file <- function(gtf.filepath){
-  gtf <- fread(input = "/nfs/home/students/evelyn/bachelor/data/core_data/GCF_000001405.38_GRCh38.p12_genomic.gtf", sep = "\t", header = F)
-  colnames(gtf) <- c('seqname', 'source', 'feature', 'start', 'end', 'score', 'strand', 'frame', 'attribute')
-  
-  genes <- as.data.frame(gtf[gtf$feature == "gene", ])
-  genes <- separate(genes, attribute, c("gene_id", "GeneID", "HGNC", "description", "gbkey", "gene", "gene_biotype", "gene_synonym_1", "gene_synonym_2"), sep = ";")
-  genes$gene_id <- as.character(lapply(strsplit(genes$gene_id, ' |"'), '[', 3))
-  genes <- select(genes, "start", "end", "gene_id")
-  colnames(genes) <- c("gene_start", "gene_end", "gene_id")
-  
-  gtf <- as.data.frame(gtf[gtf$feature == "exon", ])
-  gtf <- separate(gtf, attribute, c("gene_id", "transcript_id", "GeneID", "gbkey", "gene", "product", "exon_number"), sep = ";")
-  gtf <- select(gtf, "seqname", "source", "feature", "start", "end", "source", "strand", "frame", "gene_id", "transcript_id")
-  gtf$transcript_id <- lapply(strsplit(gtf$transcript_id, ' |\\.|"'), '[', 4)
-  gtf$gene_id <- as.character(lapply(strsplit(gtf$gene_id, ' |"'), '[', 3))
-  gtf <- merge(gtf, genes, by = "gene_id")
-  
-  posstrand <- gtf[gtf$strand == "+", ]
-  posstrand$exon_transcript_start <- posstrand$start - posstrand$gene_start + 1
-  posstrand$exon_transcript_end <- posstrand$end - posstrand$gene_start + 1
-  negstrand <- gtf[gtf$strand == "-", ]
-  negstrand$exon_transcript_start <- negstrand$gene_end - negstrand$end + 1
-  negstrand$exon_transcript_end <- negstrand$gene_end - negstrand$start + 1
-  gtf <- rbind(posstrand, negstrand)
-  gtf$exon_length <- gtf$exon_transcript_end - gtf$exon_transcript_start + 1
-  
-  mirreti_annotation <- NULL
-  for(g in unique(gtf$gene_id)){
-    sub_annot <- annotation[annotation$ensembl_gene_id == g, ]
-    if(length(unique(sub_annot$ensembl_transcript_id)) <= 1)
-      next
-    sub_candidates <- candidate_exons_matched[candidate_exons_matched$ensembl_gene_id == g, ]
-    for(i in 1:nrow(sub_candidates)){
-      found_exons <- sub_annot[sub_annot$ensembl_exon_id == sub_candidates$ensembl_exon_id[i], ]
-      transcript_annot_with_missing_exon <- sub_annot[!sub_annot$ensembl_transcript_id %in% found_exons$ensembl_transcript_id, ]
-      if(length(unique(transcript_annot_with_missing_exon$ensembl_transcript_id)) < 1)
-        next
-      transcript_annot_with_missing_exon <- transcript_annot_with_missing_exon[transcript_annot_with_missing_exon$ensembl_transcript_id != sub_candidates$ensembl_transcript_id[1], ]
-      if(length(unique(transcript_annot_with_missing_exon$ensembl_transcript_id)) > 1){
-        dataframe <- data.frame(ensembl_transcript_id_1 = rep(sub_candidates$ensembl_transcript_id[i], length(unique(transcript_annot_with_missing_exon$ensembl_transcript_id))),
-                                ensembl_exon_id_1 = rep(sub_candidates$ensembl_exon_id[i], length(unique(transcript_annot_with_missing_exon$ensembl_transcript_id))),
-                                correlation = rep(sub_candidates$correlation[i], length(unique(transcript_annot_with_missing_exon$ensembl_transcript_id))))
-        dataframe$transcript_without_exon_and_correlation <- unique(transcript_annot_with_missing_exon$ensembl_transcript_id)
-        if(is.null(mirreti_annotation)){
-          mirreti_annotation <- dataframe
-        } else {
-          mirreti_annotation <- rbind(mirreti_annotation, dataframe)
-        }
-      }
-    }
-  }
-  transcript_annot <- NUL
-  t <- "NM_144670"
-  for(t in unique(gtf$transcript_id)){
-    sub <- gtf[gtf$transcript_id == t, ]
-    transcript <- data.frame(transcript_id = t, transcript_length = sum(sub$exon_length), exon_number = nrow(sub))
-    if(is.null(transcript_annot)){
-      transcript_annot <- transcript
-    } else {
-      transcript_annot <- rbind(transcript_annot, transcript)
-    }
-  }
-  
-  return(gtf)
-}
-
 # MASTER METHOD
 read.mirreti.data <- function(mir.filepath, tpm.filepath, interactions.filepath, sampleannot.filepath){
   mir_expr <- read.expression.file(mir.filepath)
@@ -241,157 +160,118 @@ read.mirreti.data <- function(mir.filepath, tpm.filepath, interactions.filepath,
 # #' @param interactions Data Frame of miRNA - mRNA interactions. The column name of the mRNAs needs to be "mRNA".
 # #' @param ensembl_mart Mart object compatible with the biomaRt query. Gives the possibility to search older versions of the Ensembl database. The default is the current Ensembl database version.
 # #' @param id.type Search Ensembl database for "validated", "predicted" or "both" RefSeq mRNA IDs. The default will search for both ID types.
-# #' @param log Set a boolean value to print log information to the console. The default is FALSE and the method won't print a log.
 # #' @return interactions Modified interactions data with matching Ensembl transcript IDs
-preproc.idconversion.refseqtoensembl <- function(interactions, ensembl_mart = NULL, id.type = 'both', log = FALSE){
-  
-  # Collect input log data
-  input.log <- paste("Input interaction contains:\n",
-                    "\t- ", length(unique(interactions$mRNA)), " RefSeq mRNA IDs\n", 
-                    "\t- ", length(unique(interactions$Genesymbol)), " Genesymbols\n",
-                    "\t- ", length(unique(interactions$miRNA)), " miRNA IDs\n",
-                    "\t- ", nrow(interactions), " entries\n\n",
-                    sep = "")
+preproc.idconversion.refseqtoensembl <- function(interactions, ensembl_mart = NULL, id.type = 'both'){
   
   # Step 1: Prepare reqired data
-    refseq_ids <- unique(interactions$mRNA)
-    if(is.null(ensembl_mart))
-      ensembl_mart <- ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+  refseq_ids <- unique(interactions$mRNA)
+  if(is.null(ensembl_mart))
+    ensembl_mart <- ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
   
   # Step 2: Retrieve Ensemble IDs via biomaRt
-    mappings <- NULL
-    if(id.type == 'validated'){
-      mappings <- getBM(attributes = c('refseq_mrna', 'ensembl_transcript_id'),
-                        filters = 'refseq_mrna',
-                        values = refseq_ids,
-                        mart = ensembl_mart)
-      colnames(mappings) <- c('mRNA', 'ensembl_transcript_id')
-    } else if(id.type == 'predicted'){
-      mappings <- getBM(attributes = c('refseq_mrna_predicted', 'ensembl_transcript_id'),
-                        filters = 'refseq_mrna_predicted',
-                        values = refseq_ids,
-                        mart = ensembl_mart)
-      colnames(mappings) <- c('mRNA', 'ensembl_transcript_id')
-    } else if(id.type == 'both'){
-      refseq_ensembl <- getBM(attributes = c('refseq_mrna', 'ensembl_transcript_id'),
-                              filters = 'refseq_mrna',
-                              values = refseq_ids,
-                              mart = ensembl_mart)
-      predrefseq_ensembl <- getBM(attributes = c('refseq_mrna_predicted', 'ensembl_transcript_id'),
-                                  filters = 'refseq_mrna_predicted',
-                                  values = refseq_ids,
-                                  mart = ensembl_mart)
-      colnames(refseq_ensembl) <- c('mRNA', 'ensembl_transcript_id')
-      colnames(predrefseq_ensembl) <- c('mRNA', 'ensembl_transcript_id')
-      mappings <- rbind(refseq_ensembl, predrefseq_ensembl)
-    } else {
-      cat("\nIncorrect value for parameter id_type\nPlease choose between 'validated', 'predicted' and 'both'\nRefSeq to Ensemble IDs conversion stopped...\n")
-      return(NULL)
-    }
-    if(is.null(mappings)){
-      cat("\nNo Ensemble IDs found\nRefSeq to Ensemble IDs conversion stopped...\n")
-      return(NULL)
-    }
+  mappings <- NULL
+  if(id.type == 'validated'){
+    mappings <- getBM(attributes = c('refseq_mrna', 'ensembl_transcript_id'),
+                      filters = 'refseq_mrna',
+                      values = refseq_ids,
+                      mart = ensembl_mart)
+    colnames(mappings) <- c('mRNA', 'ensembl_transcript_id')
+  } else if(id.type == 'predicted'){
+    mappings <- getBM(attributes = c('refseq_mrna_predicted', 'ensembl_transcript_id'),
+                      filters = 'refseq_mrna_predicted',
+                      values = refseq_ids,
+                      mart = ensembl_mart)
+    colnames(mappings) <- c('mRNA', 'ensembl_transcript_id')
+  } else if(id.type == 'both'){
+    refseq_ensembl <- getBM(attributes = c('refseq_mrna', 'ensembl_transcript_id'),
+                            filters = 'refseq_mrna',
+                            values = refseq_ids,
+                            mart = ensembl_mart)
+    predrefseq_ensembl <- getBM(attributes = c('refseq_mrna_predicted', 'ensembl_transcript_id'),
+                                filters = 'refseq_mrna_predicted',
+                                values = refseq_ids,
+                                mart = ensembl_mart)
+    colnames(refseq_ensembl) <- c('mRNA', 'ensembl_transcript_id')
+    colnames(predrefseq_ensembl) <- c('mRNA', 'ensembl_transcript_id')
+    mappings <- rbind(refseq_ensembl, predrefseq_ensembl)
+  } else {
+    cat("\nIncorrect value for parameter id_type\nPlease choose between 'validated', 'predicted' and 'both'\nRefSeq to Ensemble IDs conversion stopped...\n")
+    return(NULL)
+  }
+  if(is.null(mappings)){
+    cat("\nNo Ensemble IDs found\nRefSeq to Ensemble IDs conversion stopped...\n")
+    return(NULL)
+  }
   
   # Step 3: Remove entries where no Ensemble IDs were found 
   # and entries where found Genesymbols don't match the interaction data
-    blank_interactions <- interactions[!interactions$mRNA %in% mappings$mRNA, ]
-    interactions <- interactions[interactions$mRNA %in% mappings$mRNA, ]
-    interactions <- merge(interactions, mappings, by = c("mRNA"), allow.cartesian = TRUE)
-    
-  # LOG
-    if(log){
-      ambiguous_mappings <- mappings[duplicated(mappings$mRNA), ]
-      distinct_interactions <- interactions[!(interactions$mRNA %in% ambiguous_mappings$mRNA), ]
-      ambiguous_interactions <- interactions[interactions$mRNA %in% ambiguous_mappings$mRNA, ]
-      
-      cat("\n*Log of RefSeq ID to Ensembl ID conversion*\n\n")
-      
-      cat(paste("Used ensembl_mart host: ", listEnsembl(ensembl_mart)$version[1], "\n", sep = ""))
-      cat(paste("Used id types: ", id.type, "\n\n", sep = ""))
-      
-      cat(input.log)
-      
-      cat("Mapped interactions contain:\n")
-      cat(paste("\t- ", length(unique(interactions$mRNA)), " RefSeq mRNA IDs\n", sep = ""))
-      cat(paste("\t- ", length(unique(interactions$ensembl_transcript_id)), " Ensembl transcript IDs\n", sep = ""))
-      cat(paste("\t- ", length(unique(interactions$Genesymbol)), " Genesymbols\n", sep = ""))
-      cat(paste("\t- ", length(unique(interactions$miRNA)), " miRNA IDs\n", sep = ""))
-      cat(paste("\t- ", nrow(interactions), " entries\n\n", sep = ""))
-      
-      cat("Detailed ID mapping log:\n")
-      cat(paste("\t- ", length(unique(distinct_interactions$mRNA)), " distictly mapped RefSeq mRNA IDs\n", sep = ""))
-      cat(paste("\t- ", length(unique(distinct_interactions$ensembl_transcript_id)), " Ensembl transcript IDs in distinct RefSeq mRNA ID mapping\n", sep = ""))
-      cat(paste("\t- ", nrow(distinct_interactions), " entries\n", sep = ""))
-      cat(paste("\t- ", length(unique(ambiguous_interactions$mRNA)), " ambiguously mapped RefSeq mRNA IDs\n", sep = ""))
-      cat(paste("\t- ", length(unique(ambiguous_interactions$ensembl_transcript_id)), " Ensembl transcript IDs in ambiguous RefSeq mRNA ID mapping\n", sep = ""))
-      cat(paste("\t- ", length(unique(ambiguous_interactions$Genesymbol)), " unique Genesymbols in ambiguous RefSeq mRNA ID mapping\n", sep = ""))
-      cat(paste("\t- ", nrow(ambiguous_interactions), " entries\n", sep = ""))
-      
-      cat("ID conversion removed from interactions:\n")
-      cat(paste("\t- ", length(unique(blank_interactions$mRNA)), " unique RefSeq mRNA IDs\n", sep = ""))
-      cat(paste("\t- ", nrow(blank_interactions), " entries\n", sep = ""))
-    }
-
+  ambiguous_mrnas <- mappings[duplicated(mappings$mRNA), ]
+  ambiguous_transcripts <- mappings[duplicated(mappings$ensembl_transcript_id), ]
+  distinct_mappings <- mappings[!(mappings$mRNA %in% ambiguous_mrnas$mRNA) &
+                                  !(mappings$ensembl_transcript_id %in% ambiguous_transcripts$ensembl_transcript_id), ]
+  # This MIRRETI VERSION USES ONLY DISTINCT MAPPINGS  
+  distinct_interactions <- interactions[interactions$mRNA %in% distinct_mappings$mRNA, ]
+  interactions <- merge(distinct_interactions, distinct_mappings, by = c("mRNA"), allow.cartesian = TRUE)
+  
   return(interactions)
-    rm(refseq_ids, mappings, refseq_ensembl, predrefseq_ensembl, blank_interactions, distinct_interactions, ambiguous_interactions, ambiguous_mappings, id.type, log, input.log)
+  rm(refseq_ids, mappings, refseq_ensembl, predrefseq_ensembl, ambiguous_mrnas, ambiguous_transcripts, distinct_interactions, distinct_mappings, id.type)
 }
 
 
 preproc.filter.samples <- function(mir_expr, tpm_expr, sample_annotation, primary.disease, sample.type.id){
   # Step 1: Retrieve sample ID list matching primary.disease & sample.type.id
-    if(!is.null(sample.type.id)){
-      sample.type.id <- as.numeric(sample.type.id)
-    }
-    
-    # Get lists of valid disease types and sample type IDs
-    disease_types <- sort(unique(sample_annotation$X_primary_disease))
-    sample_types <- unique(subset(sample_annotation, select = c("sample_type_id", "sample_type")))
-    sample_types <- sample_types[order(sample_types$sample_type_id), ]
-    row.names(sample_types) <- NULL
-    
-    # Validate input values for primary_disease and sample_type_id
-    valid.disease.type <- TRUE
-    valid.sample.type <- TRUE
-    if(is.null(primary.disease) || missing(primary.disease) || !primary.disease %in% disease_types)
-      valid.disease.type <- FALSE
-    if(is.null(sample.type.id) || missing(sample.type.id) || !sample.type.id %in% sample_types$sample_type_id)
-      valid.sample.type <- FALSE
-    
-    # Filter tcga sample annotations for primary_disease and sample_type_id
-    sample_list <- NULL
-    if(!valid.disease.type && !valid.sample.type) {
-      cat("\nLIST OF TCGA PRIMARY DISEASE IDENTIFIERS\n")
-      cat("----------------------------------------\n\n")
-      print(disease_types)
-      cat("\n")
-      cat("\nLIST OF SAMPLE TYPES WITH INDICES\n")
-      cat("---------------------------------\n\n")
-      print(sample_types)
-      cat("\n")
-      return(list(NULL, NULL))
-    } else if(!valid.disease.type) {
-      sample_list <- sample_annotation[sample_annotation$sample_type_id == sample.type.id & 
-                                         !is.na(sample_annotation$sample_type_id), ]
-    } else if(!valid.sample.type) {
-      sample_list <- sample_annotation[sample_annotation$X_primary_disease == primary.disease, ]
-    } else {
-      sample_list <- sample_annotation[sample_annotation$X_primary_disease == primary.disease & 
-                                         sample_annotation$sample_type_id == sample.type.id & 
-                                         !is.na(sample_annotation$sample_type_id), ]
-    }
-    sample_list <- as.vector(sample_list$sample)
-    
-    # Report if no samples were found
-    if(length(sample_list) < 1){
-      cat("\nRetrieved sample list of size 0.\nFilter expr data for samples stopped...\n")
-      return(list(NULL, NULL))
-    }
+  if(!is.null(sample.type.id)){
+    sample.type.id <- as.numeric(sample.type.id)
+  }
+  
+  # Get lists of valid disease types and sample type IDs
+  disease_types <- sort(unique(sample_annotation$X_primary_disease))
+  sample_types <- unique(subset(sample_annotation, select = c("sample_type_id", "sample_type")))
+  sample_types <- sample_types[order(sample_types$sample_type_id), ]
+  row.names(sample_types) <- NULL
+  
+  # Validate input values for primary_disease and sample_type_id
+  valid.disease.type <- TRUE
+  valid.sample.type <- TRUE
+  if(is.null(primary.disease) || missing(primary.disease) || !primary.disease %in% disease_types)
+    valid.disease.type <- FALSE
+  if(is.null(sample.type.id) || missing(sample.type.id) || !sample.type.id %in% sample_types$sample_type_id)
+    valid.sample.type <- FALSE
+  
+  # Filter tcga sample annotations for primary_disease and sample_type_id
+  sample_list <- NULL
+  if(!valid.disease.type && !valid.sample.type) {
+    cat("\nLIST OF TCGA PRIMARY DISEASE IDENTIFIERS\n")
+    cat("----------------------------------------\n\n")
+    print(disease_types)
+    cat("\n")
+    cat("\nLIST OF SAMPLE TYPES WITH INDICES\n")
+    cat("---------------------------------\n\n")
+    print(sample_types)
+    cat("\n")
+    return(list(NULL, NULL))
+  } else if(!valid.disease.type) {
+    sample_list <- sample_annotation[sample_annotation$sample_type_id == sample.type.id & 
+                                       !is.na(sample_annotation$sample_type_id), ]
+  } else if(!valid.sample.type) {
+    sample_list <- sample_annotation[sample_annotation$X_primary_disease == primary.disease, ]
+  } else {
+    sample_list <- sample_annotation[sample_annotation$X_primary_disease == primary.disease & 
+                                       sample_annotation$sample_type_id == sample.type.id & 
+                                       !is.na(sample_annotation$sample_type_id), ]
+  }
+  sample_list <- as.vector(sample_list$sample)
+  
+  # Report if no samples were found
+  if(length(sample_list) < 1){
+    cat("\nRetrieved sample list of size 0.\nFilter expr data for samples stopped...\n")
+    return(list(NULL, NULL))
+  }
   
   # Step 2: Subset mir_expr & gene_expr columns for found sample IDs    
-    mir_expr <- mir_expr[ , colnames(mir_expr) %in% sample_list]
-    tpm_expr <- tpm_expr[ , colnames(tpm_expr) %in% sample_list]
-    
+  mir_expr <- mir_expr[ , colnames(mir_expr) %in% sample_list]
+  tpm_expr <- tpm_expr[ , colnames(tpm_expr) %in% sample_list]
+  
   return(list(mir_expr, tpm_expr))
 }
 
@@ -445,11 +325,29 @@ preproc.data.spongefilter <- function(mir_expr, tpm_expr, interactions){
 
 
 # MASTER METHOD
-preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary.disease, sample.type.id, ensembl_mart = NULL, top.number = NULL){
-    
+preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary.disease, sample.type.id, ensembl_mart = NULL, top.number = NULL, log = FALSE){
+  
+  if(log){
+    cat("\nMIRRETI data preprocess report\n")
+    cat("-Summary of the input data-\n")
+    cat(paste("\tmir_expr: ", nrow(mir_expr), " miRNAs and ", ncol(mir_expr), " samples\n"), sep = "")
+    cat(paste("\ttpm_expr: ", nrow(tpm_expr), " transcripts and ", ncol(tpm_expr), " samples\n"), sep = "")
+    cat(paste("\tinteractions: ", uniqueN(interactions$miRNA), " miRNAs, ", uniqueN(interactions$mRNA), " mRNAs and ", nrow(interactions), "miRNA-mRNA interactions\n"), sep = "")
+    cat(paste("\tprimary disease: ", primary.disease, "\n"), sep = "")
+    cat(paste("\tsample condition: ", sample.type.id, "\n"), sep = "")
+    cat(paste("\tEnsembl version: ", listMarts(ensembl_mart)[1,2], "\n\n"), sep = "")
+  }
+  
   # Step 1: ID conversion  
   interactions <- preproc.idconversion.refseqtoensembl(interactions = interactions,
                                                        ensembl_mart = ensembl_mart)
+  if(log){
+    cat("-Log of RefSeq to Ensembl ID conversion of the interactions data-\n")
+    cat(paste("\tmiRNAs: ", uniqueN(interactions$miRNA), "\n"), sep = "")
+    cat(paste("\tmRNAs: ", uniqueN(interactions$mRNA), "\n"), sep = "")
+    cat(paste("\ttranscripts: ", uniqueN(interactions$ensembl_transcript_id), "\n"), sep = "")
+    cat(paste("\tmiRNA-mRNA interactions: ", nrow(interactions), "\n\n"), sep = "")
+  }
   
   # Step 2: Extract samples for specific disease and sample type
   box <- preproc.filter.samples(mir_expr = mir_expr,
@@ -457,12 +355,22 @@ preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary
                                 sample_annotation = sample_annotation,
                                 primary.disease = primary.disease,
                                 sample.type.id = sample.type.id)
+  if(log){
+    cat("-Log of expression data sample extraction based on primary disease and sample condition-\n")
+    cat(paste("\tmir_expr: ", nrow(box[[1]]), " miRNAs and ", ncol(box[[1]]), " samples\n"), sep = "")
+    cat(paste("\ttpm_expr: ", nrow(box[[2]]), " transcripts and ", ncol(box[[2]]), " samples\n\n"), sep = "")
+  }
   
   # Step 3: Filter expression data for NAs and variance
   mir_expr <- preproc.filter.variance(preproc.filter.na(expr_data = box[[1]],
                                                         na.equivalent = 0))
   tpm_expr <- preproc.filter.variance(preproc.filter.na(expr_data = box[[2]], 
                                                         na.equivalent = -9.9658))
+  if(log){
+    cat("-Log of filtering expression data for NAs and variance-\n")
+    cat(paste("\tmir_expr: ", nrow(mir_expr), " miRNAs and ", ncol(mir_expr), " samples\n"), sep = "")
+    cat(paste("\ttpm_expr: ", nrow(tpm_expr), " transcripts and ", ncol(tpm_expr), " samples\n\n"), sep = "")
+  }
   
   # Step 3: Crossfilter data
   box <- preproc.crossfilter(mir_expr = mir_expr,
@@ -482,7 +390,7 @@ preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary
     mir_expr <- box[[1]]
     tpm_expr <- box[[2]]
     interactions <- box[[3]]
-      cat(paste("Produced subset of ", top.number, " most variant transcripts\n", sep = ""))
+    cat(paste("Produced subset of ", top.number, " most variant transcripts\n", sep = ""))
   }
   
   # Step 5: METHOD TANGLING (not usefull but needed for runtime analysis; Redo it!)
@@ -492,7 +400,12 @@ preproc <- function(mir_expr, tpm_expr, interactions, sample_annotation, primary
   mir_expr <- box[[1]]
   tpm_expr <- box[[2]]
   interactions_matrix <- box[[3]]
-
+  if(log){
+    cat("Summary of the output data-\n")
+    cat(paste("\tmir_expr: ", ncol(mir_expr), " miRNAs and ", nrow(mir_expr), " samples\n"), sep = "")
+    cat(paste("\ttpm_expr: ", ncol(tpm_expr), " transcripts and ", nrow(tpm_expr), " samples\n"), sep = "")
+    cat(paste("\tinteractions: ", uniqueN(interactions$miRNA), " miRNAs, ", uniqueN(interactions$mRNA), " mRNAs, ", uniqueN(interactions$ensembl_transcript_id), " transcripts and ", nrow(interactions), "miRNA-mRNA interactions\n\n"), sep = "")
+  }
   return(list(mir_expr, tpm_expr, interactions, interactions_matrix))
 }
 
@@ -512,26 +425,26 @@ sponge.unlist.candidates <- function(sponge_filtered){
 
 # MASTER METHOD
 sponge.filter <- function(tpm_expr, mir_expr, interactions_matrix, cluster.size = 40){
-      start.time <- Sys.time()
-      cat("______________________________________________________________________\n")
-      cat(paste(start.time, "\t\tStart running the SPONGE interaction filter on ", cluster.size, " cluster...\n", sep = ""))
-        cl <- makePSOCKcluster(cluster.size)
-        registerDoParallel(cl)
-
+  start.time <- Sys.time()
+  cat("______________________________________________________________________\n")
+  cat(paste(start.time, "\t\tStart running the SPONGE interaction filter on ", cluster.size, " cluster...\n", sep = ""))
+  cl <- makePSOCKcluster(cluster.size)
+  registerDoParallel(cl)
+  
   sponge_filtered_le <- sponge_gene_miRNA_interaction_filter(gene_expr = tpm_expr,
                                                              mir_expr = mir_expr,
                                                              mir_predicted_targets = interactions_matrix,
                                                              coefficient.threshold = -0.05,
                                                              coefficient.direction = "<",
                                                              parallel.chunks = cluster.size)
-      cat(paste(Sys.time(), "\t\t\tFinished the SPONGE interaction filter step for negativ correlation\n"), sep = "")
+  cat(paste(Sys.time(), "\t\t\tFinished the SPONGE interaction filter step for negativ correlation\n"), sep = "")
   sponge_filtered_ge <- sponge_gene_miRNA_interaction_filter(gene_expr = tpm_expr,
                                                              mir_expr = mir_expr,
                                                              mir_predicted_targets = interactions_matrix,
                                                              coefficient.threshold = 0.05,
                                                              coefficient.direction = ">",
                                                              parallel.chunks = cluster.size)
-      cat(paste(Sys.time(), "\t\t\tFinished the SPONGE interaction filter step for positiv correlation\n"), sep = "\t")
+  cat(paste(Sys.time(), "\t\t\tFinished the SPONGE interaction filter step for positiv correlation\n"), sep = "\t")
   le_candidates <- sponge.unlist.candidates(sponge_filtered_le)
   le_candidates$correlation <- rep("<", nrow(le_candidates))
   ge_candidates <- sponge.unlist.candidates(sponge_filtered_ge)
@@ -539,148 +452,104 @@ sponge.filter <- function(tpm_expr, mir_expr, interactions_matrix, cluster.size 
   candidates <- rbind(le_candidates, ge_candidates)
   colnames(candidates) <- c('miRNA', 'coefficient', 'ensembl_transcript_id', 'correlation')
   
-        stopCluster(cl)
-      end.time <- Sys.time()
-      diff.time <- difftime(end.time, start.time, units = "secs")
-      cat(paste(end.time, "\t\tFinished total run of the SPONGE interaction filter\n=> Total procession time:\t", diff.time, " SECS\n\n", sep = ""))
+  stopCluster(cl)
+  end.time <- Sys.time()
+  diff.time <- difftime(end.time, start.time, units = "secs")
+  cat(paste(end.time, "\t\tFinished total run of the SPONGE interaction filter\n=> Total procession time:\t", diff.time, " SECS\n\n", sep = ""))
   
   return(candidates)
 }
 
 
 #-------------------------------------------------------------------------------------
-#                                   Position analysis
+#                                   
 #-------------------------------------------------------------------------------------
 
-# Finished
-exon.model.preproc <- function(candidates, interactions){
-  candidates <- merge(candidates, interactions, allow.cartesian = TRUE)
-  candidates$binding_site_start <- as.numeric(sapply(strsplit(candidates$binding_site, ","), "[", 1))
-  candidates$binding_site_end <- as.numeric(sapply(strsplit(candidates$binding_site, ","), "[", 2))
-  candidates$ensembl_transcript_id <- as.character(candidates$ensembl_transcript_id)
-  candidates <- select(candidates, miRNA, mRNA, ensembl_transcript_id, Genesymbol, genomic_region, binding_site_start, binding_site_end, binding_probability, coefficient, correlation)
-  return(candidates)
+
+mirreti.build.correlationtable <- function(candidates, interactions){
+  interactions_mrnamirna_pairs <- as.character(unique(paste(interactions$miRNA, interactions$ensembl_transcript_id, sep = ",")))
+  interactions_correlated <- as.character(unique(paste(candidates$miRNA, candidates$ensembl_transcript_id, sep = ",")))
+  #interactions_correlated <- interactions_correlated %>% mutate_all(as.character)
+  interactions_notCorrelated <- interactions_mrnamirna_pairs[!interactions_mrnamirna_pairs %in% interactions_correlated]
+  rm(interactions_mrnamirna_pairs, interactions_correlated)
+  gc()
+  interactions_notCorrelated <- data.table(miRNA = lapply(strsplit(interactions_notCorrelated, ','), '[', 1),
+                                           ensembl_transcript_id = lapply(strsplit(interactions_notCorrelated, ','), '[', 2),
+                                           coefficient = rep(0, length(interactions_notCorrelated)),
+                                           correlation = rep("-", length(interactions_notCorrelated)))
+  correlation_table <- rbind(candidates, interactions_notCorrelated)
+  rm(interactions_notCorrelated)
+  correlation_table$miRNA <- as.character(correlation_table$miRNA)
+  correlation_table$ensembl_transcript_id <- as.character(correlation_table$ensembl_transcript_id)
+  correlation_table <- merge(interactions, correlation_table, by = c("miRNA", "ensembl_transcript_id"))
+  return(correlation_table)
 }
 
-# Finished
-exon.model.build.ensembl <- function(interactions, ensembl_mart = NULL){
+
+# find genes which lose binding sites within isoforms
+# WARNING hierarchical clustering too unprecise
+# WARNING try k-means clustering
+mirreti.determin.bindingsiteusage <- function(correlation_table){
+  bs_usage <- data.table(matrix(ncol = 5, nrow = 0))
+  colnames(bs_usage) <- c("Genesymbol", "wildtype_transcript_ids", "miRNA", "correlation", "variant_transcript_ids")
   
-  if(is.null(ensembl_mart))
-    ensembl_mart <- ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
-  
-  transcriptomic_annot <- getBM(attributes = c('refseq_mrna', 'strand', 'ensembl_gene_id', 'start_position', 'end_position', 'ensembl_transcript_id', 'ensembl_exon_id', 'transcript_start', 'transcript_end'),
-                                filters = 'refseq_mrna',
-                                values = unique(interactions$mRNA),
-                                mart = ensembl_mart)
-  transcriptomic_annot_predicted <- getBM(attributes = c('refseq_mrna_predicted', 'strand', 'ensembl_gene_id', 'start_position', 'end_position', 'ensembl_transcript_id', 'ensembl_exon_id', 'transcript_start', 'transcript_end'),
-                                          filters = 'refseq_mrna_predicted',
-                                          values = unique(candidates$mRNA),
-                                          mart = ensembl_mart)
-  colnames(transcriptomic_annot)[1] <- "mRNA"
-  colnames(transcriptomic_annot_predicted)[1] <- "mRNA"
-  transcriptomic_annot <- rbind(transcriptomic_annot, transcriptomic_annot_predicted)
-  
-  exonic_annot <- getBM(attributes = c('ensembl_exon_id', 'exon_chrom_start', 'exon_chrom_end'),
-                        filters = 'ensembl_exon_id',
-                        values = unique(transcriptomic_annot$ensembl_exon_id),
-                        mart = ensembl_mart)
-  
-  annotation <- merge(transcriptomic_annot, exonic_annot, by = "ensembl_exon_id", allow.cartesian = TRUE)
-  posstrand <- annotation[annotation$strand == "1", ]
-  posstrand$exon_transcript_start <- posstrand$exon_chrom_start - posstrand$transcript_start + 1
-  posstrand$exon_transcript_end <- posstrand$exon_chrom_end - posstrand$transcript_start + 1
-  posstrand$exon_gene_start <- posstrand$exon_chrom_start - posstrand$start_position + 1
-  posstrand$exon_gene_end <- posstrand$exon_chrom_end - posstrand$start_position + 1
-  negstrand <- annotation[annotation$strand == "-1", ]
-  negstrand$exon_transcript_start <- negstrand$transcript_end - negstrand$exon_chrom_end + 1
-  negstrand$exon_transcript_end <- negstrand$transcript_end - negstrand$exon_chrom_start + 1
-  negstrand$exon_gene_start <- negstrand$end_position - negstrand$exon_chrom_end + 1
-  negstrand$exon_gene_end <- negstrand$end_position - negstrand$exon_chrom_start + 1
-  annotation <- rbind(posstrand, negstrand)
-  annotation$exon_length <- annotation$exon_transcript_end - annotation$exon_transcript_start + 1
-  
-  annotation_temp <- NULL
-  count <- 0
-  pb <- txtProgressBar(min = 0, max = length(unique(annotation$ensembl_transcript_id)), style = 3)
-  for(t in unique(annotation$ensembl_transcript_id)){
-    sub <- annotation[annotation$ensembl_transcript_id == t, ]
-    sub <- sub[order(sub$exon_transcript_start), ]
-    sub$exon_mrna_start <- rep(0, nrow(sub))
-    sub$exon_mrna_end <- rep(0, nrow(sub))
-    index <- 1
-    for(i in 1:nrow(sub)){
-      sub$exon_mrna_start[i] <- index
-      sub$exon_mrna_end[i] <- sub$exon_mrna_start[i] + sub$exon_length[i] - 1
-      index <- sub$exon_mrna_end[i] + 1
-    }
-    if(is.null(annotation_temp))
-      annotation_temp <- sub
-    else
-      annotation_temp <- rbind(annotation_temp, sub)
+  for(g in unique(correlation_table$Genesymbol)){
+    g_sub <- correlation_table[correlation_table$Genesymbol == g, ]
+    g_sub_01 <- correlation_table_BRCA_01[correlation_table_BRCA_01$Genesymbol == g, ]
+    g_sub_11 <- correlation_table_BRCA_11[correlation_table_BRCA_11$Genesymbol == g, ]
     
-    count <- count + 1
-    setTxtProgressBar(pb, count)
-  }
-  close(pb)
-  annotation <- annotation_temp
-  annotation <- select(annotation, mRNA, ensembl_gene_id, ensembl_transcript_id, ensembl_exon_id, exon_mrna_start, exon_mrna_end)
-  
-  return(annotation)
-}
-
-
-# MASTER METHOD
-exon.model.enrich <- function(interactions, candidates, ensembl_mart){
-  
-  # Step 1: Preproc candidates data
-  candidates <- exon.model.preproc(candidates = candidates,
-                                   interactions = interactions)
-  
-  # Step 2: Retrieve ensembl annotation data on transcriptomic and exonic positions
-  annotation <- exon.model.build(interactions = interactions,
-                                  ensembl_mart = ensembl_mart)
-  
-  # Step 3: Match binding sites to exons
-  candidate_exons <- merge(candidates, annotation, by = c("mRNA", "ensembl_transcript_id"), allow.cartesian = TRUE)
-  candidate_exons_matched <- candidate_exons %>% filter(exon_mrna_start <= binding_site_start &
-                                                        binding_site_end <= exon_mrna_end)
-  # => WHAT HAPPENS WITH UNMATCHED BINDING SITES??
-  #candidate_exons_unmatched <- anti_join(candidates, candidate_exons_matched, by = c("miRNA", "mRNA", "ensembl_transcript_id", "binding_site_start", "binding_site_end", "correlation"))
-  #candidate_exons_unmatched <- merge(candidate_exons_unmatched, annotation, by = c("mRNA", "ensembl_transcript_id"), allow.cartesian = TRUE)
-  #candidate_exons_mappable_vers92 <- candidate_exons_unmatched_vers92 %>% filter(exon_mrna_start <= binding_site_start &
-  #                                                             binding_site_start <= exon_mrna_end |
-  #                                                             exon_mrna_start <= binding_site_end &
-  #                                                             binding_site_end <= exon_mrna_end)
-  
-  # Step 4: Find transcripts without the exons
-  mirreti_annotation <- NULL
-  for(g in unique(candidate_exons_matched$ensembl_gene_id)){
-    sub_annot <- annotation[annotation$ensembl_gene_id == g, ]
-    if(length(unique(sub_annot$ensembl_transcript_id)) <= 1)
+    t.numb <- uniqueN(g_sub_11$ensembl_transcript_id)
+    if(t.numb < 2){
       next
-    sub_candidates <- candidate_exons_matched[candidate_exons_matched$ensembl_gene_id == g, ]
-    for(i in 1:nrow(sub_candidates)){
-      found_exons <- sub_annot[sub_annot$ensembl_exon_id == sub_candidates$ensembl_exon_id[i], ]
-      transcript_annot_with_missing_exon <- sub_annot[!sub_annot$ensembl_transcript_id %in% found_exons$ensembl_transcript_id, ]
-      if(length(unique(transcript_annot_with_missing_exon$ensembl_transcript_id)) < 1)
+    }
+    
+    match <- g_sub[g_sub$correlation != "-", ]
+    match <- unique(match$miRNA)
+    if(length(match) == 0){
+      next
+    }
+    
+    
+    for(mi in match){
+      mi_sub <- g_sub[g_sub$miRNA == mi, ]
+      
+      t_table <- data.table(table(mi_sub$ensembl_transcript_id))
+      colnames(t_table) <- c("ensembl_transcript_id", "binding_site_number")
+      if(uniqueN(t_table$binding_site_number) == 1){
         next
-      transcript_annot_with_missing_exon <- transcript_annot_with_missing_exon[transcript_annot_with_missing_exon$ensembl_transcript_id != sub_candidates$ensembl_transcript_id[1], ]
-      if(length(unique(transcript_annot_with_missing_exon$ensembl_transcript_id)) > 1){
-        dataframe <- data.frame(ensembl_transcript_id_1 = rep(sub_candidates$ensembl_transcript_id[i], length(unique(transcript_annot_with_missing_exon$ensembl_transcript_id))),
-                                ensembl_exon_id_1 = rep(sub_candidates$ensembl_exon_id[i], length(unique(transcript_annot_with_missing_exon$ensembl_transcript_id))),
-                                correlation = rep(sub_candidates$correlation[i], length(unique(transcript_annot_with_missing_exon$ensembl_transcript_id))))
-        dataframe$transcript_without_exon_and_correlation <- unique(transcript_annot_with_missing_exon$ensembl_transcript_id)
-        if(is.null(mirreti_annotation)){
-          mirreti_annotation <- dataframe
-        } else {
-          mirreti_annotation <- rbind(mirreti_annotation, dataframe)
+      }
+      
+      mi_sub$binding_site_start <- as.numeric(sapply(strsplit(mi_sub$binding_site, ","), "[", 1))
+      dist_mat <- dist(mi_sub$binding_site_start, method = 'euclidean')
+      hclust_avg <- hclust(dist_mat, method = 'centroid')
+      plot(hclust_avg)
+      cut_avg <- cutree(hclust_avg, k = max(t_table$binding_site_number))
+      mi_sub <- mutate(mi_sub, cluster = cut_avg)
+      cl <- count(mi_sub,cluster)
+      cl <- cl[order(-cl$n), ]
+      
+      for(c in nrow(cl)){
+        cl_sub <- mi_sub[mi_sub$cluster == cl$cluster[c], ]
+        cl_table <- data.table(table(cl_sub$ensembl_transcript_id))
+        if(uniqueN(cl_table$N) == 1){
+          next
         }
+        
+        if(all(unique(cl_sub$correlation) == c("-"))){
+          next
+        }
+        
+        
+        
+        dt <- data.table(Genesymbol = g, 
+                         wildtype_transcript_ids = paste0(cl_sub$ensembl_transcript_id, collapse = "|"),
+                         miRNA = mi,
+                         correlation = paste0(cl_sub$correlation, collapse = "|"),
+                         variant_transcript_ids = paste0(setdiff(unique(mi_sub$ensembl_transcript_id), unique(cl_sub$ensembl_transcript_id)), collapse = "|"))
+        bs_usage <- rbind(bs_usage, dt)
       }
     }
   }
-  #candidate_exons_matched <- candidate_exons_matched[!candidate_exons_matched$ensembl_gene_id %in% single_transcript_genes, ]
-  #annotation <- annotation[!annotation$ensembl_gene_id %in% single_transcript_genes, ]
-  return(mirreti_annotation)
+  
+  return(bs_usage)
 }
-
-
