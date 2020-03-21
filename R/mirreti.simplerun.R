@@ -115,7 +115,6 @@ tcgaSamples.subset <- function(tpm_expr, mir_expr, sample_annotation, primary.di
 }
 
 exprdata.filter.na <- function(expr_data, max.na.percent = 0.2){
-  
   na_content <- rowSums(expr_data == min(expr_data))
   expr_data <- expr_data[na_content/ncol(expr_data) <= max.na.percent, ]
   na_content <- colSums(expr_data == min(expr_data))
@@ -299,7 +298,7 @@ mirreti.simplerun <- function(tpm_expr, mir_expr, interactions, cluster.size, lo
         cat(paste(start.time, "\tStart integrating correlation coefficient and direction of SPONGE candidates into interactions data...\n", sep = ""))
       }
   candidates <- sponge.candidates.unlist(candidates)
-  candidates$correlation <- rep("<", nrow(le_candidates))
+  candidates$correlation <- rep("<", nrow(candidates))
   colnames(candidates) <- c('miRNA', 'coefficient', 'ensembl_transcript_id', 'correlation')
   interactions <- sponge.integrate.correlatedInteractions(interactions, candidates)
   candidates <- interactions[interactions$correlation == "<", ]

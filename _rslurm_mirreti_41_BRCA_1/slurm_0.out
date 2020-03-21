@@ -1,0 +1,135 @@
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:data.table’:
+
+    between, first, last
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+
+				*** Welcome to MIRRETI 4.1***
+
+
+______________________________________________________________________
+
+2020-03-14 19:49:28	Start sourcing MIRRETI 4.1 methods and loading core data...
+2020-03-14 19:51:30	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	121.401 secs
+
+______________________________________________________________________
+
+
+🆃🅲🅶🅰 EXPRESSION DATA SUBSET REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  SAMPLES
+    Total samples: 12804
+    number of cancer types: 33
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 197044
+    number of samples: 10535
+  MICRORNA EXPRESSION DATA
+    microRNAs: 743
+    number of samples: 10818
+  CANCER TYPES: breast invasive carcinoma
+  CONDITIONS: 1
+
+
+2020-03-14 19:51:30	Start filtering TCGA samples for cancer types and conditions...
+2020-03-14 19:51:30	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	Total samples: 1101
+	❗ Hier könnten Ihre Frequenzen stehen ❗
+⌛ Time required:	0.015 secs
+
+2020-03-14 19:51:30	Start subsetting transcript expression data for samples and filter for NAs...
+2020-03-14 19:51:40	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	Transcripts: 79210
+	Remaining samples: 1073
+⌛ Time required:	10.074 secs
+
+2020-03-14 19:51:40	Start subsetting microRNA expression data for samples and filter for NAs...
+2020-03-14 19:51:40	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	microRNAs: 475
+	Remaining samples: 1068
+⌛ Time required:	0.055 secs
+
+2020-03-14 19:51:40	Start subsetting sample and expression data for samples included in all datasets...
+2020-03-14 19:51:40	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.002 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  SAMPLES
+    Total samples: 1044
+	❗ Hier könnten Ihre Frequenzen stehen ❗
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 79210
+    remaining samples: 1044
+  MICRORNA EXORESSION DATA
+    microRNAs: 475
+    remaining samples: 1044
+
+END OF THE TCGA EXPRESSION DATA SUBSET REPORT
+
+______________________________________________________________________
+Cache found
+Cache found
+START MIRRETI 4.1 ONE CONDITION ANALYSIS______________________________________________________________________
+
+
+🆂🅿🅾🅽🅶🅴 DATA CORRELATION REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 4403665
+    transcripts: 14337
+    genes: 9842
+    microRNAs: 371
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 14337
+    number of samples: 1044
+  MICRORNA EXPRESSION DATA
+    microRNAs: 371
+    number of samples: 1044
+    cluster size: 25
+
+
+2020-03-14 19:52:21	Start preparing expression and interactions data for SPONGE interaction filter...
+2020-03-14 19:52:22	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.641 secs
+
+2020-03-14 19:52:22	Start running SPONGE interaction filter...
+2020-03-14 22:53:37	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	10875.302 secs
+
+2020-03-14 22:53:37	Start integrating correlation coefficient and direction of SPONGE candidates into interactions data...
+2020-03-14 22:53:59	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	21.93 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 4403665
+    correlated interactions: 12369
+    correlated transcripts: 3460
+    correlated genes: 3012
+    correlated microRNAs: 346
+    summary of correlation coefficients
+     - Min.: -0.432084455493398
+     - 1st Qu.: -0.103937088842465
+     - Median: -0.075923037147558
+     - Mean: -0.0900176488093347
+     - 3rd Qu.: -0.0607883083367668
+     - Max.: -0.0500008188482857
+
+
+END OF THE SPONGE DATA CORRELATION REPORT
+
+______________________________________________________________________

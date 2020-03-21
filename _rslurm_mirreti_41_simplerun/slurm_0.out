@@ -1,0 +1,100 @@
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:data.table’:
+
+    between, first, last
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+
+
+🆃🅲🅶🅰 [1mexpression data subset report
+[22m
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+[1m  samples
+[22m	Total samples: 12804
+	Number of cancer types: 33
+[1m  transcript expression data
+[22m	Transcripts: 197044
+	Numbeer of samples: 10535
+[1m  microRNA expression data
+[22m	microRNAs: 743
+	Number of samples: 10818
+	cancer types: breast invasive carcinoma
+	conditions: 1
+
+2020-03-12 06:07:48	Start filtering TCGA samples for cancer types and conditions...
+2020-03-12 06:07:48[1m	🗸 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+[22m	Total samples: 1101
+	!!!!!!!!Hier könnten Ihre Frequenzen stehen!!!!!!!!
+Time required:	0.0154833793640137 secs
+
+2020-03-12 06:07:48	Start subsetting transcript expression data for samples and filter for NAs...
+2020-03-12 06:07:58[1m	🗸 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+[22m	Transcripts: 79210
+	Remaining samples: 1073
+Time required:	9.86999249458313 secs
+
+2020-03-12 06:07:58	Start subsetting microRNA expression data for samples and filter for NAs...
+2020-03-12 06:07:58[1m	🗸 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+[22m	microRNAs: 475
+	Remaining samples: 1068
+Time required:	0.0508558750152588 secs
+
+2020-03-12 06:07:58	Start subsetting sample and expression data for samples included in all datasets...
+2020-03-12 06:07:58[1m	🗸 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+[22mTime required:	0.00174498558044434 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+[1m  samples
+[22m	Total samples: 1044
+	!!!!!!!!Hier könnten Ihre Frequenzen stehen!!!!!!!!
+[1m  transcript expression data
+[22m	Transcripts: 79210
+	Remaining samples: 1044
+[1m  microRNA expression data
+[22m	microRNAs: 475
+	Remaining samples: 1044
+
+[1mEnd of the TCGA expression data subset report
+
+[22mCache found
+Cache found
+
+
+🅼🅸🆁🆁🅴🆃🅸 [1msimple run report
+[22m
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+[1m  interactions
+[22m	Total interactions: 4403665
+	transcripts: 14337
+	genes: 9842
+	microRNAs: 371
+[1m  transcript expression data
+[22m	Transcripts: 14337
+	Numbeer of samples: 1044
+[1m  microRNA expression data
+[22m	microRNAs: 371
+	Number of samples: 1044
+	cluster size: 25
+
+2020-03-12 06:08:55	Start preparing expression and interactions data for SPONGE interaction filter...
+2020-03-12 06:08:55[1m	🗸 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+[22mTime required:	0.85028600692749 secs
+
+2020-03-12 06:08:55	Start running SPONGE interaction filter...
+2020-03-12 09:10:12[1m	🗸 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+[22mTime required:	10876.1059627533 secs
+
+2020-03-12 09:10:12	Start integrating correlation coefficient and direction of SPONGE candidates into interactions data...
+Error in nrow(le_candidates) : object 'le_candidates' not found
+Calls: do.call ... .mapply -> <Anonymous> -> mirreti.simplerun -> nrow
+Execution halted
