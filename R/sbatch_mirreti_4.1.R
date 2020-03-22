@@ -1,5 +1,5 @@
 library(rslurm)
-cluster.size = 10
+cluster.size = 25
 
 
 
@@ -10,13 +10,15 @@ cluster.size = 10
 sbatch.mirreti.4.1 <- function(primary.diseases, conditions, f.test, cluster.size){
    set.seed(01101990)
    log = TRUE
+         glob.start.time <- 0
          start.time <- 0
          end.time <- 0
    
          if(log){
-            cat("\n\t\t\t\t*** Welcome to MIRRETI 4.1 ***\n\n\n")
+            cat("\n\n\t\t\t\t*** Welcome to MIRRETI 4.1 ***\n\n\n")
             cat("______________________________________________________________________\n\n")
-            start.time <- Sys.time()
+            glob.start.time <- Sys.time()
+            start.time <- glob.start.time
             cat(paste(start.time, "\tStart sourcing MIRRETI 4.1 methods and loading core data...\n", sep = ""))
          }
    source("/nfs/home/students/evelyn/bachelor/R_workspace/MIRRETI/R/MIRRETI_4.1.R")
@@ -47,12 +49,14 @@ sbatch.mirreti.4.1 <- function(primary.diseases, conditions, f.test, cluster.siz
    sample_annotation <- data[[3]]
      rm(data)
      gc()
-   interactions <- mirwalkInteractions.idconversion(interactions = interactions)
+   interactions <- mirwalkInteractions.idconversion(interactions = interactions,
+                                                    log = log)
    
    data <- mirretiData.filter.actualTargets(tpm_expr = tpm_expr,
                                             mir_expr = mir_expr,
                                             interactions = interactions,
-                                            var.threshold = 0.2)
+                                            var.threshold = 0.2,
+                                            log = log)
    tpm_expr <- data[[1]]
    mir_expr <- data[[2]]
    interactions <- data[[3]]
@@ -77,7 +81,7 @@ sbatch.mirreti.4.1 <- function(primary.diseases, conditions, f.test, cluster.siz
      
    # Two condition
    else{
-      cat("START MIRRETI 4.1 TWO CONDITION ANALYSIS\n")
+      cat("\n\nSTART MIRRETI 4.1 TWO CONDITION ANALYSIS\n")
       interactions <- mirreti.twoConditions(tpm_expr = tpm_expr,
                                     mir_expr = mir_expr,
                                     sample_annotation = sample_annotation,
@@ -92,6 +96,10 @@ sbatch.mirreti.4.1 <- function(primary.diseases, conditions, f.test, cluster.siz
       #save(interactions, drimseq, file = outfile.minipack)
       save(tpm_expr, mir_expr, sample_annotation, interactions, file = outfile.datapack)
    }
+         if(log){
+            cat(paste("Total runtime:\t", round(difftime(Sys.time(), glob.start.time, units = "secs"), digits = 3), " secs\n\n", sep = ""))
+            cat("\t\t\t\t*** END OF THE MIRRETI RUNTIME ANALYSIS ***\n\n")
+         }
 }
 
 

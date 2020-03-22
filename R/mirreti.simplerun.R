@@ -339,7 +339,8 @@ sponge.integrate.correlatedInteractions <- function(interactions, candidates){
                                            coefficient = rep(0, length(interactions_notCorrelated)),
                                            correlation = rep("-", length(interactions_notCorrelated)))
   correlation_table <- rbind(candidates, interactions_notCorrelated)
-  rm(interactions_notCorrelated)
+    rm(interactions_notCorrelated)
+    gc()
   correlation_table$miRNA <- as.character(correlation_table$miRNA)
   correlation_table$ensembl_transcript_id <- as.character(correlation_table$ensembl_transcript_id)
   interactions <- merge(interactions, correlation_table, by = c("miRNA", "ensembl_transcript_id"))

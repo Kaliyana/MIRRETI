@@ -23,4 +23,268 @@ The following objects are masked from ‘package:base’:
 
 ______________________________________________________________________
 
-2020-03-21 04:36:55	Start sourcing MIRRETI 4.1 methods and loading core data...
+2020-03-22 01:04:00	Start sourcing MIRRETI 4.1 methods and loading core data...
+2020-03-22 01:06:03	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	123.113 secs
+
+______________________________________________________________________
+
+🆃🅲🅶🅰 EXPRESSION DATA SUBSET REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  SAMPLES
+    Total samples: 12804
+    number of cancer types: 33
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 197044
+    number of samples: 10535
+  MICRORNA EXPRESSION DATA
+    microRNAs: 743
+    number of samples: 10818
+  CANCER TYPES: breast invasive carcinoma
+  SAMPLE TYPES: 1|11
+
+
+2020-03-22 01:06:03	Start filtering TCGA samples for cancer and sample types...
+2020-03-22 01:06:03	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	Total samples: 1234
+	breast invasive carcinoma: 1234
+	 - sample type 1: 1101
+	 - sample type 11: 133
+⌛ Time required:	0.007 secs
+
+2020-03-22 01:06:03	Start subsetting transcript expression data for samples and filter for NAs...
+2020-03-22 01:06:14	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	transcripts: 79436
+	remaining samples: 1185
+⌛ Time required:	10.35 secs
+
+2020-03-22 01:06:14	Start subsetting microRNA expression data for samples and filter for NAs...
+2020-03-22 01:06:14	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	microRNAs: 476
+	remaining samples: 1158
+⌛ Time required:	0.053 secs
+
+2020-03-22 01:06:14	Start subsetting sample and expression data for samples included in all datasets...
+2020-03-22 01:06:14	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.002 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  SAMPLES
+    Total samples: 1133
+	breast invasive carcinoma: 1133
+	 - sample type 1: 1044
+	 - sample type 11: 89
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 79436
+    remaining samples: 1133
+  MICRORNA EXPRESSION DATA
+    microRNAs: 476
+    remaining samples: 1133
+
+END OF THE TCGA EXPRESSION DATA SUBSET REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🅼🅸🆁🆆🅰🅻🅺 INTERACTIONS ID CONVERSION REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 110466891
+    microRNAs: 2656
+    RefSeq mRNAs: 42880
+    genes: 19222
+  ENSEMBL MART: Ensembl Genes 99
+  ID TYPE: both
+
+
+2020-03-22 01:06:29	Start retreiving Ensembl annotation for RefSeq mRNA IDs...
+Cache found
+Cache found
+2020-03-22 01:06:35	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	6.09 secs
+
+2020-03-22 01:06:35	Start analysing found RefSeq to Ensembl ID mappings...
+2020-03-22 01:07:01	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	25.613 secs
+
+  🙤 🅜🅐🅟🅟🅘🅝🅖 🅡🅔🅟🅞🅡🅣 🙦
+  NOT MAPPED INTERACTIONS
+    Total not mapped interactions: 2934073
+    mRNAs:  1101
+  AMBIGUOUSLY MAPPED INTERACTIONS
+    Total ambiguously mapped interactions: 14477964
+    mRNAs:  5562
+  DISTINCTLY MAPPED INTERACTIONS
+    Total distinctly mapped interactions: 93054854
+    mRNAs: 36217
+    genes: 17861
+     -> genes with removed transcripts: 2020
+     -> totally removed genes: 1361
+
+2020-03-22 01:07:13	Start combining annotations of distinctly mapped IDs...
+2020-03-22 01:07:24	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	11.146 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 93054854
+    microRNAs: 2656
+    RefSeq mRNAs: 36217
+    Ensembl transcripts: 36217
+    Ensembl genes: 17846
+
+END OF THE MIRWALK INTERACTIONS ID CONVERSION REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🅼🅸🆁🆁🅴🆃🅸 ACTUAL DATA TARGETS REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 93054854
+    transcripts: 36217
+    genes: 17846
+    microRNAs: 2656
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 79436
+    number of samples: 1133
+  MICRORNA EXPRESSION DATA
+    microRNAs: 476
+    number of samples: 1133
+  VARIANCE THRESHOLD: 0.2
+
+
+2020-03-22 01:07:28	Start filtering expression data for least variant transcript and microRNAs...
+2020-03-22 01:07:33	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	transcripts: 63548
+	microRNAs: 380
+⌛ Time required:	4.998 secs
+
+2020-03-22 01:07:33	Start subsetting interactions and expression data for commonly included transcripts and microRNAs...
+2020-03-22 01:07:42	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	8.918 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 4371138
+    transcripts: 14402
+    genes: 9889
+    microRNAs: 371
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 14402
+    number of samples: 1133
+  MICRORNA EXPRESSION DATA
+    microRNAs: 371
+    number of samples: 1133
+
+END OF THE ACTUAL DATA TARGETS REPORT
+______________________________________________________________________
+START MIRRETI 4.1 TWO CONDITION ANALYSIS
+______________________________________________________________________
+
+🆂🅿🅾🅽🅶🅴 DATA CORRELATION REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 4371138
+    transcripts: 14402
+    genes: 9889
+    microRNAs: 371
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 14402
+    number of samples: 1044
+  MICRORNA EXPRESSION DATA
+    microRNAs: 371
+    number of samples: 1044
+  CONDITION: breastinvasivecarcinoma_1
+  F-TEST: FALSE
+  CLUSTER SIZE: 25
+
+
+2020-03-22 01:07:44	Start preparing expression and interactions data for SPONGE interaction filter...
+2020-03-22 01:07:45	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.8 secs
+
+2020-03-22 01:07:45	Start running SPONGE interaction filter...
+2020-03-22 03:57:53	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	10208.132 secs
+
+2020-03-22 03:57:53	Start integrating correlation coefficient and direction of SPONGE candidates into interactions data...
+2020-03-22 03:58:19	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	25.511 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 4371138
+    correlated interactions: 12491
+    correlated transcripts: 3470
+    correlated genes: 3054
+    correlated microRNAs: 347
+    summary of correlation coefficient
+     - Min.: Min.   :-0.47971  
+     - 1st Qu.: 1st Qu.:-0.10331  
+     - Median: Median :-0.07566  
+     - Mean: Mean   :-0.08960  
+     - 3rd Qu.: 3rd Qu.:-0.06055  
+     - Max.: Max.   :-0.05000  
+
+
+END OF THE SPONGE DATA CORRELATION REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🆂🅿🅾🅽🅶🅴 DATA CORRELATION REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 4371138
+    transcripts: 14402
+    genes: 9889
+    microRNAs: 371
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 14402
+    number of samples: 89
+  MICRORNA EXPRESSION DATA
+    microRNAs: 371
+    number of samples: 89
+  CONDITION: breastinvasivecarcinoma_11
+  F-TEST: FALSE
+  CLUSTER SIZE: 25
+
+
+2020-03-22 03:58:19	Start preparing expression and interactions data for SPONGE interaction filter...
+2020-03-22 03:58:20	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.918 secs
+
+2020-03-22 03:58:20	Start running SPONGE interaction filter...
+2020-03-22 04:26:03	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	1663.308 secs
+
+2020-03-22 04:26:03	Start integrating correlation coefficient and direction of SPONGE candidates into interactions data...
+2020-03-22 04:26:24	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	21.395 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 4371138
+    correlated interactions: 43296
+    correlated transcripts: 6133
+    correlated genes: 5083
+    correlated microRNAs: 367
+    summary of correlation coefficient
+     - Min.: Min.   :-2.60790  
+     - 1st Qu.: 1st Qu.:-0.21001  
+     - Median: Median :-0.11627  
+     - Mean: Mean   :-0.17887  
+     - 3rd Qu.: 3rd Qu.:-0.07315  
+     - Max.: Max.   :-0.05000  
+
+
+END OF THE SPONGE DATA CORRELATION REPORT
+______________________________________________________________________

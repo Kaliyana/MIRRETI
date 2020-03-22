@@ -1,0 +1,212 @@
+
+
+				*** Welcome to MIRRETI 4.1 ***
+
+
+______________________________________________________________________
+
+2020-03-22 13:15:23	Start sourcing MIRRETI 4.1 methods and loading core data...
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:data.table’:
+
+    between, first, last
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Loading required package: foreach
+Loading required package: iterators
+Loading required package: parallel
+2020-03-22 13:17:29	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	126.059 secs
+
+______________________________________________________________________
+
+🆃🅲🅶🅰 EXPRESSION DATA SUBSET REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  SAMPLES
+    Total samples: 12804
+    number of cancer types: 33
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 197044
+    number of samples: 10535
+  MICRORNA EXPRESSION DATA
+    microRNAs: 743
+    number of samples: 10818
+  CANCER TYPES: lung squamous cell carcinoma
+  SAMPLE TYPES: 1
+
+
+2020-03-22 13:17:29	Start filtering TCGA samples for cancer and sample types...
+2020-03-22 13:17:29	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	Total samples: 506
+	lung squamous cell carcinoma: 506
+	 - sample type 1: 506
+⌛ Time required:	0.005 secs
+
+2020-03-22 13:17:29	Start subsetting transcript expression data for samples and filter for NAs...
+2020-03-22 13:17:33	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	transcripts: 83731
+	remaining samples: 494
+⌛ Time required:	3.68 secs
+
+2020-03-22 13:17:33	Start subsetting microRNA expression data for samples and filter for NAs...
+2020-03-22 13:17:33	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	microRNAs: 506
+	remaining samples: 467
+⌛ Time required:	0.022 secs
+
+2020-03-22 13:17:33	Start subsetting sample and expression data for samples included in all datasets...
+2020-03-22 13:17:33	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.001 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  SAMPLES
+    Total samples: 458
+    lung squamous cell carcinoma: 458
+     - sample type 1: 458
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 83731
+    remaining samples: 458
+  MICRORNA EXPRESSION DATA
+    microRNAs: 506
+    remaining samples: 458
+
+END OF THE TCGA EXPRESSION DATA SUBSET REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🅼🅸🆁🆆🅰🅻🅺 INTERACTIONS ID CONVERSION REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 110466891
+    microRNAs: 2656
+    RefSeq mRNAs: 42880
+    genes: 19222
+  ENSEMBL MART: Ensembl Genes 99
+  ID TYPE: both
+
+
+2020-03-22 13:17:39	Start retreiving Ensembl annotation for RefSeq mRNA IDs...
+Cache found
+Cache found
+2020-03-22 13:17:45	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	5.309 secs
+
+2020-03-22 13:17:45	Start analysing found RefSeq to Ensembl ID mappings...
+2020-03-22 13:18:13	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	28.833 secs
+
+  🙤 🅜🅐🅟🅟🅘🅝🅖 🅡🅔🅟🅞🅡🅣 🙦
+  NOT MAPPED INTERACTIONS
+    Total not mapped interactions: 2934073
+    mRNAs:  1101
+  AMBIGUOUSLY MAPPED INTERACTIONS
+    Total ambiguously mapped interactions: 14477964
+    mRNAs:  5562
+  DISTINCTLY MAPPED INTERACTIONS
+    Total distinctly mapped interactions: 93054854
+    mRNAs: 36217
+    genes: 17861
+     -> genes with removed transcripts: 2020
+     -> totally removed genes: 1361
+
+2020-03-22 13:18:46	Start combining annotations of distinctly mapped IDs...
+2020-03-22 13:19:00	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	13.568 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 93054854
+    microRNAs: 2656
+    RefSeq mRNAs: 36217
+    Ensembl transcripts: 36217
+    Ensembl genes: 17846
+
+END OF THE MIRWALK INTERACTIONS ID CONVERSION REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🅼🅸🆁🆁🅴🆃🅸 ACTUAL DATA TARGETS REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 93054854
+    transcripts: 36217
+    genes: 17846
+    microRNAs: 2656
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 83731
+    number of samples: 458
+  MICRORNA EXPRESSION DATA
+    microRNAs: 506
+    number of samples: 458
+  VARIANCE THRESHOLD: 0.2
+
+
+2020-03-22 13:19:04	Start filtering expression data for least variant transcript and microRNAs...
+2020-03-22 13:19:08	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	transcripts: 66984
+	microRNAs: 404
+⌛ Time required:	4.012 secs
+
+2020-03-22 13:19:08	Start subsetting interactions and expression data for commonly included transcripts and microRNAs...
+2020-03-22 13:19:16	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	8.551 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 4609970
+    transcripts: 13831
+    genes: 9659
+    microRNAs: 392
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 13831
+    number of samples: 458
+  MICRORNA EXPRESSION DATA
+    microRNAs: 392
+    number of samples: 458
+
+END OF THE ACTUAL DATA TARGETS REPORT
+______________________________________________________________________
+
+
+				*** Start MIRRETI 4.1 one condition analysis ***
+______________________________________________________________________
+
+🆂🅿🅾🅽🅶🅴 DATA CORRELATION REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 4609970
+    transcripts: 13831
+    genes: 9659
+    microRNAs: 392
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 13831
+    number of samples: 458
+  MICRORNA EXPRESSION DATA
+    microRNAs: 392
+    number of samples: 458
+  CONDITION: 
+  F-TEST: FALSE
+  CLUSTER SIZE: 25
+
+
+2020-03-22 13:19:18	Start preparing expression and interactions data for SPONGE interaction filter...
+2020-03-22 13:19:19	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.739 secs
+
+2020-03-22 13:19:19	Start running SPONGE interaction filter...

@@ -1,0 +1,628 @@
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:data.table’:
+
+    between, first, last
+
+The following object is masked from ‘package:biomaRt’:
+
+    select
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+
+
+				*** Welcome to MIRRETI 4.1 ***
+
+
+______________________________________________________________________
+
+2020-03-22 01:52:09	Start sourcing MIRRETI 4.1 methods and loading core data...
+2020-03-22 01:54:09	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	119.877 secs
+
+______________________________________________________________________
+
+🆃🅲🅶🅰 EXPRESSION DATA SUBSET REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  SAMPLES
+    Total samples: 12804
+    number of cancer types: 33
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 197044
+    number of samples: 10535
+  MICRORNA EXPRESSION DATA
+    microRNAs: 743
+    number of samples: 10818
+  CANCER TYPES: kidney clear cell carcinoma
+  SAMPLE TYPES: 1
+
+
+2020-03-22 01:54:09	Start filtering TCGA samples for cancer and sample types...
+2020-03-22 01:54:09	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	Total samples: 536
+	kidney clear cell carcinoma: 536
+	 - sample type 1: 536
+⌛ Time required:	0.007 secs
+
+2020-03-22 01:54:09	Start subsetting transcript expression data for samples and filter for NAs...
+2020-03-22 01:54:13	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	transcripts: 83427
+	remaining samples: 522
+⌛ Time required:	3.937 secs
+
+2020-03-22 01:54:13	Start subsetting microRNA expression data for samples and filter for NAs...
+2020-03-22 01:54:13	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	microRNAs: 442
+	remaining samples: 497
+⌛ Time required:	0.025 secs
+
+2020-03-22 01:54:13	Start subsetting sample and expression data for samples included in all datasets...
+2020-03-22 01:54:13	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.002 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  SAMPLES
+    Total samples: 486
+    kidney clear cell carcinoma: 486
+     - sample type 1: 486
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 83427
+    remaining samples: 486
+  MICRORNA EXPRESSION DATA
+    microRNAs: 442
+    remaining samples: 486
+
+END OF THE TCGA EXPRESSION DATA SUBSET REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🅼🅸🆁🆆🅰🅻🅺 INTERACTIONS ID CONVERSION REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 110466891
+    microRNAs: 2656
+    RefSeq mRNAs: 42880
+    genes: 19222
+  ENSEMBL MART: Ensembl Genes 99
+  ID TYPE: both
+
+
+2020-03-22 01:54:20	Start retreiving Ensembl annotation for RefSeq mRNA IDs...
+Cache found
+Cache found
+2020-03-22 01:54:24	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	4.68 secs
+
+2020-03-22 01:54:24	Start analysing found RefSeq to Ensembl ID mappings...
+2020-03-22 01:54:44	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	19.321 secs
+
+  🙤 🅜🅐🅟🅟🅘🅝🅖 🅡🅔🅟🅞🅡🅣 🙦
+  NOT MAPPED INTERACTIONS
+    Total not mapped interactions: 2934073
+    mRNAs:  1101
+  AMBIGUOUSLY MAPPED INTERACTIONS
+    Total ambiguously mapped interactions: 14477964
+    mRNAs:  5562
+  DISTINCTLY MAPPED INTERACTIONS
+    Total distinctly mapped interactions: 93054854
+    mRNAs: 36217
+    genes: 17861
+     -> genes with removed transcripts: 2020
+     -> totally removed genes: 1361
+
+2020-03-22 01:55:09	Start combining annotations of distinctly mapped IDs...
+2020-03-22 01:55:21	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	12.296 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 93054854
+    microRNAs: 2656
+    RefSeq mRNAs: 36217
+    Ensembl transcripts: 36217
+    Ensembl genes: 17846
+
+END OF THE MIRWALK INTERACTIONS ID CONVERSION REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🅼🅸🆁🆁🅴🆃🅸 ACTUAL DATA TARGETS REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 93054854
+    transcripts: 36217
+    genes: 17846
+    microRNAs: 2656
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 83427
+    number of samples: 486
+  MICRORNA EXPRESSION DATA
+    microRNAs: 442
+    number of samples: 486
+  VARIANCE THRESHOLD: 0.2
+
+
+2020-03-22 01:55:26	Start filtering expression data for least variant transcript and microRNAs...
+2020-03-22 01:55:29	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	transcripts: 66741
+	microRNAs: 353
+⌛ Time required:	3.259 secs
+
+2020-03-22 01:55:29	Start subsetting interactions and expression data for commonly included transcripts and microRNAs...
+2020-03-22 01:55:37	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	8.045 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 3908783
+    transcripts: 13687
+    genes: 9459
+    microRNAs: 344
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 13687
+    number of samples: 486
+  MICRORNA EXPRESSION DATA
+    microRNAs: 344
+    number of samples: 486
+
+END OF THE ACTUAL DATA TARGETS REPORT
+______________________________________________________________________
+
+
+				*** Start MIRRETI 4.1 one condition analysis ***
+______________________________________________________________________
+
+🆂🅿🅾🅽🅶🅴 DATA CORRELATION REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 3908783
+    transcripts: 13687
+    genes: 9459
+    microRNAs: 344
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 13687
+    number of samples: 486
+  MICRORNA EXPRESSION DATA
+    microRNAs: 344
+    number of samples: 486
+  CONDITION: 
+  F-TEST: FALSE
+  CLUSTER SIZE: 25
+
+
+2020-03-22 01:55:40	Start preparing expression and interactions data for SPONGE interaction filter...
+2020-03-22 01:55:41	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.569 secs
+
+2020-03-22 01:55:41	Start running SPONGE interaction filter...
+2020-03-22 04:26:42	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	9060.961 secs
+
+2020-03-22 04:26:42	Start integrating correlation coefficient and direction of SPONGE candidates into interactions data...
+2020-03-22 04:27:02	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	20.395 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 3908783
+    correlated interactions: 34313
+    correlated transcripts: 5519
+    correlated genes: 4559
+    correlated microRNAs: 334
+    summary of correlation coefficient
+     - Min.: Min.   :-0.94671  
+     - 1st Qu.: 1st Qu.:-0.12535  
+     - Median: Median :-0.08482  
+     - Mean: Mean   :-0.10641  
+     - 3rd Qu.: 3rd Qu.:-0.06361  
+     - Max.: Max.   :-0.05000  
+
+
+END OF THE SPONGE DATA CORRELATION REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🅼🅸🆁🆁🅴🆃🅸 BINDING SITE CONTROLLED OR MISSING TRANSCRIPT REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 3908783
+     - correlated: 34313
+    transcripts: 13687
+     - correlated: 5519
+    genes: 9459
+     - correlated: 4559
+    microRNAs: 344
+     - correlated: 334
+
+
+2020-03-22 04:27:03	Start filtering expression data for least variant transcript and microRNAs...
+  |                                                                              |                                                                      |   0%  |                                                                              |                                                                      |   1%  |                                                                              |=                                                                     |   1%  |                                                                              |=                                                                     |   2%  |                                                                              |==                                                                    |   2%  |                                                                              |==                                                                    |   3%  |                                                                              |==                                                                    |   4%  |                                                                              |===                                                                   |   4%  |                                                                              |===                                                                   |   5%  |                                                                              |====                                                                  |   5%  |                                                                              |====                                                                  |   6%  |                                                                              |=====                                                                 |   6%  |                                                                              |=====                                                                 |   7%  |                                                                              |=====                                                                 |   8%  |                                                                              |======                                                                |   8%  |                                                                              |======                                                                |   9%  |                                                                              |=======                                                               |   9%  |                                                                              |=======                                                               |  10%  |                                                                              |=======                                                               |  11%  |                                                                              |========                                                              |  11%  |                                                                              |========                                                              |  12%  |                                                                              |=========                                                             |  12%  |                                                                              |=========                                                             |  13%  |                                                                              |=========                                                             |  14%  |                                                                              |==========                                                            |  14%  |                                                                              |==========                                                            |  15%  |                                                                              |===========                                                           |  15%  |                                                                              |===========                                                           |  16%  |                                                                              |============                                                          |  16%  |                                                                              |============                                                          |  17%  |                                                                              |============                                                          |  18%  |                                                                              |=============                                                         |  18%  |                                                                              |=============                                                         |  19%  |                                                                              |==============                                                        |  19%  |                                                                              |==============                                                        |  20%  |                                                                              |==============                                                        |  21%  |                                                                              |===============                                                       |  21%  |                                                                              |===============                                                       |  22%
+2020-03-22 04:32:52	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	349.902 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  BINDING SITE CONTROLLED AND MISSING TRANSCRIPT PAIRS
+    Total pairs: 3341
+     - bct: 1463
+     - bmt: 1878
+    transcripts: 1682
+     - bct: 823
+     - bmt: 1033
+     ✎ transcripts may be BCT for one microRNA but BMT for another microRNA
+    microRNAs: 244
+    genes: 683
+
+END OF THE BINDING SITE CONTROLLED OR MISSING TRANSCRIPT REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🅼🅸🆁🆁🅴🆃🅸 ACTUAL DATA TARGETS REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 3341
+    transcripts: 1682
+    genes: 683
+    microRNAs: 244
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 13687
+    number of samples: 486
+  MICRORNA EXPRESSION DATA
+    microRNAs: 344
+    number of samples: 486
+  VARIANCE THRESHOLD: 
+
+
+2020-03-22 04:32:52	Start filtering expression data for least variant transcript and microRNAs...
+2020-03-22 04:32:52	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	transcripts: 13687
+	microRNAs: 344
+⌛ Time required:	0.022 secs
+
+2020-03-22 04:32:53	Start subsetting interactions and expression data for commonly included transcripts and microRNAs...
+2020-03-22 04:32:53	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.047 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 3341
+    transcripts: 1682
+    genes: 683
+    microRNAs: 244
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 1682
+    number of samples: 486
+  MICRORNA EXPRESSION DATA
+    microRNAs: 244
+    number of samples: 486
+
+END OF THE ACTUAL DATA TARGETS REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🆂🅿🅾🅽🅶🅴 DATA CORRELATION REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 3341
+    transcripts: 1682
+    genes: 683
+    microRNAs: 244
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 1682
+    number of samples: 486
+  MICRORNA EXPRESSION DATA
+    microRNAs: 244
+    number of samples: 486
+  CONDITION: 
+  F-TEST: FALSE
+  CLUSTER SIZE: 3
+
+
+2020-03-22 04:32:53	Start preparing expression and interactions data for SPONGE interaction filter...
+2020-03-22 04:32:53	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.036 secs
+
+2020-03-22 04:32:53	Start running SPONGE interaction filter...
+2020-03-22 04:34:58	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	125.731 secs
+
+2020-03-22 04:34:58	Start integrating correlation coefficient and direction of SPONGE candidates into interactions data...
+2020-03-22 04:35:00	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	1.682 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 3341
+    correlated interactions: 2032
+    correlated transcripts: 1304
+    correlated genes: 681
+    correlated microRNAs: 232
+    summary of correlation coefficient
+     - Min.: Min.   :-6.41864  
+     - 1st Qu.: 1st Qu.:-0.29873  
+     - Median: Median :-0.19663  
+     - Mean: Mean   :-0.23250  
+     - 3rd Qu.: 3rd Qu.:-0.12809  
+     - Max.: Max.   :-0.05011  
+
+
+END OF THE SPONGE DATA CORRELATION REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🅼🅸🆁🆁🅴🆃🅸 STATISTICAL ANALYSIS REPORT
+
+
+Analysis report of correlation coefficient
+-------------------------------------------
+
+Summary of BCT coefficient:
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+-0.9282 -0.3193 -0.2103 -0.2326 -0.1286  0.0000 
+
+Summary of BMT coefficient:
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+-6.41864 -0.11428  0.00000 -0.07038  0.00000  0.00000 
+
+
+🅆🄸🄻🄲🄾🅇🄾🄽-🅃🄴🅂🅃
+  V = 46428
+  p-value = 1.34641033384939e-167
+  alternative hypothesis: true location shift is not equal to 0
+
+🄼🄰🄽🄽-🅆🄷🄸🅃🄽🄴🅈-🅄-🅃🄴🅂🅃
+  W = 489533
+  p-value = 2.02962126203927e-238
+  alternative hypothesis: true location shift is not equal to 0
+
+🄿🄰🄸🅁🄴🄳 🅃-🅃🄴🅂🅃
+  t = -33.4289155644722
+  df = 1286
+  p-value = 7.46792676959111e-177
+  alternative hypothesis: true location shift is not equal to 0
+  95% confidence interval: -0.188968652397752	-0.168018493603772
+  standard error = 0.00533949636076328
+  sample estimates:
+    mean of the differences = -0.178493573000762
+
+🅆🄴🄻🄲🄷 🅃🅆🄾 🅂🄰🄼🄿🄻🄴 🅃-🅃🄴🅂🅃
+  t = -27.4233335314352
+  df = 3291.15873867601
+  p-value = 2.70587988585681e-149
+  alternative hypothesis: true location shift is not equal to 0
+  95% confidence interval: -0.173795200553467	-0.150601800375076
+  standard error = 0.00591461648082805
+  sample estimates:
+    mean in group BCT = -0.232578839842319
+    mean in group BMT = -0.070380339378048
+
+
+END OF THE STATISTICAL ANALYSIS REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🆂🅿🅾🅽🅶🅴 DATA CORRELATION REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 3341
+    transcripts: 1682
+    genes: 683
+    microRNAs: 244
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 1682
+    number of samples: 486
+  MICRORNA EXPRESSION DATA
+    microRNAs: 244
+    number of samples: 486
+  CONDITION: 
+  F-TEST: TRUE
+  CLUSTER SIZE: 3
+
+
+2020-03-22 04:35:02	Start preparing expression and interactions data for SPONGE interaction filter...
+2020-03-22 04:35:02	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	0.03 secs
+
+2020-03-22 04:35:02	Start running SPONGE interaction filter...
+2020-03-22 04:37:13	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	131.502 secs
+
+2020-03-22 04:37:13	Start integrating correlation coefficient and direction of SPONGE candidates into interactions data...
+2020-03-22 04:37:15	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	1.774 secs
+
+
+  🙤 🅞🅤🅣🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  INTERACTIONS
+    Total interactions: 3341
+    correlated interactions: 2135
+    correlated transcripts: 1491
+    correlated genes: 680
+    correlated microRNAs: 230
+    summary of correlation fstats
+     - Min.: Min.   :   0.000  
+     - 1st Qu.: 1st Qu.:   3.729  
+     - Median: Median :   8.976  
+     - Mean: Mean   :  61.057  
+     - 3rd Qu.: 3rd Qu.:  33.204  
+     - Max.: Max.   :4039.600  
+    summary of correlation pval
+     - Min.: Min.   :0.000000  
+     - 1st Qu.: 1st Qu.:0.000000  
+     - Median: Median :0.002875  
+     - Mean: Mean   :0.107615  
+     - 3rd Qu.: 3rd Qu.:0.054051  
+     - Max.: Max.   :0.999545  
+    summary of correlation p.adj
+     - Min.: Min.   :0.000000  
+     - 1st Qu.: 1st Qu.:0.000000  
+     - Median: Median :0.003103  
+     - Mean: Mean   :0.107871  
+     - 3rd Qu.: 3rd Qu.:0.054051  
+     - Max.: Max.   :0.999545  
+
+
+END OF THE SPONGE DATA CORRELATION REPORT
+______________________________________________________________________
+______________________________________________________________________
+
+🅼🅸🆁🆁🅴🆃🅸 STATISTICAL ANALYSIS REPORT
+
+
+Analysis report of correlation fstats
+-------------------------------------------
+
+Summary of BCT fstats:
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+   0.000    4.508    9.846   66.376   36.214 4039.600 
+
+Summary of BMT fstats:
+    Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+   0.000    0.000    0.000   17.704    3.593 2116.553 
+
+
+🅆🄸🄻🄲🄾🅇🄾🄽-🅃🄴🅂🅃
+  V = 680187
+  p-value = 2.26227895716915e-125
+  alternative hypothesis: true location shift is not equal to 0
+
+🄼🄰🄽🄽-🅆🄷🄸🅃🄽🄴🅈-🅄-🅃🄴🅂🅃
+  W = 2116364.5
+  p-value = 1.74011255941044e-166
+  alternative hypothesis: true location shift is not equal to 0
+
+🄿🄰🄸🅁🄴🄳 🅃-🅃🄴🅂🅃
+  t = 8.19223402600539
+  df = 1234
+  p-value = 6.35131390304003e-16
+  alternative hypothesis: true location shift is not equal to 0
+  95% confidence interval: 43.770577372086	71.3366179431652
+  standard error = 7.02538495298446
+  sample estimates:
+    mean of the differences = 57.5535976576256
+
+🅆🄴🄻🄲🄷 🅃🅆🄾 🅂🄰🄼🄿🄻🄴 🅃-🅃🄴🅂🅃
+  t = 6.99446482034737
+  df = 1919.05644005315
+  p-value = 3.66351910758504e-12
+  alternative hypothesis: true location shift is not equal to 0
+  95% confidence interval: 35.0252121803949	62.3202158013382
+  standard error = 6.95874741542403
+  sample estimates:
+    mean in group BCT = 66.3763880865795
+    mean in group BMT = 17.7036740957129
+
+
+Analysis report of correlation pval
+-------------------------------------------
+
+Summary of BCT pval:
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0000000 0.0000000 0.0000029 0.0109176 0.0053113 0.8196402 
+
+Summary of BMT pval:
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.00000 0.00000 0.00000 0.11384 0.04912 0.99955 
+
+
+🅆🄸🄻🄲🄾🅇🄾🄽-🅃🄴🅂🅃
+  V = 252997
+  p-value = 1.07250125564126e-24
+  alternative hypothesis: true location shift is not equal to 0
+
+🄼🄰🄽🄽-🅆🄷🄸🅃🄽🄴🅈-🅄-🅃🄴🅂🅃
+  W = 1570299.5
+  p-value = 3.37878029556771e-13
+  alternative hypothesis: true location shift is not equal to 0
+
+🄿🄰🄸🅁🄴🄳 🅃-🅃🄴🅂🅃
+  t = -17.6905845824461
+  df = 1234
+  p-value = 1.36531425560892e-62
+  alternative hypothesis: true location shift is not equal to 0
+  95% confidence interval: -0.129408573943247	-0.103571096451137
+  standard error = 0.00658484939569392
+  sample estimates:
+    mean of the differences = -0.116489835197192
+
+🅆🄴🄻🄲🄷 🅃🅆🄾 🅂🄰🄼🄿🄻🄴 🅃-🅃🄴🅂🅃
+  t = -18.1908721934698
+  df = 2009.39776457518
+  p-value = 1.43245473374242e-68
+  alternative hypothesis: true location shift is not equal to 0
+  95% confidence interval: -0.114014285408087	-0.091823100117743
+  standard error = 0.00565771072812338
+  sample estimates:
+    mean in group BCT = 0.0109176229425191
+    mean in group BMT = 0.113836315705434
+
+
+Analysis report of correlation p.adj
+-------------------------------------------
+
+Summary of BCT p.adj:
+     Min.   1st Qu.    Median      Mean   3rd Qu.      Max. 
+0.0000000 0.0000000 0.0000049 0.0111175 0.0056999 0.8196402 
+
+Summary of BMT p.adj:
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+0.00000 0.00000 0.00000 0.11397 0.04912 0.99955 
+
+
+🅆🄸🄻🄲🄾🅇🄾🄽-🅃🄴🅂🅃
+  V = 252066
+  p-value = 4.95714407370408e-25
+  alternative hypothesis: true location shift is not equal to 0
+
+🄼🄰🄽🄽-🅆🄷🄸🅃🄽🄴🅈-🅄-🅃🄴🅂🅃
+  W = 1568606
+  p-value = 5.36746184724597e-13
+  alternative hypothesis: true location shift is not equal to 0
+
+🄿🄰🄸🅁🄴🄳 🅃-🅃🄴🅂🅃
+  t = -17.6782597844572
+  df = 1234
+  p-value = 1.62551381532934e-62
+  alternative hypothesis: true location shift is not equal to 0
+  95% confidence interval: -0.129358301923397	-0.103514654135682
+  standard error = 0.00658642193571059
+  sample estimates:
+    mean of the differences = -0.11643647802954
+
+🅆🄴🄻🄲🄷 🅃🅆🄾 🅂🄰🄼🄿🄻🄴 🅃-🅃🄴🅂🅃
+  t = -18.1829910419661
+  df = 2009.67495818019
+  p-value = 1.61816864492991e-68
+  alternative hypothesis: true location shift is not equal to 0
+  95% confidence interval: -0.113948250716247	-0.091761242755215
+  standard error = 0.00565664617544736
+  sample estimates:
+    mean in group BCT = 0.0111175371384542
+    mean in group BMT = 0.113972283874185
+
+
+END OF THE STATISTICAL ANALYSIS REPORT
+______________________________________________________________________

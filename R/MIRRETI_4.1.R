@@ -125,9 +125,9 @@ tcgaSamples.subset <- function(tpm_expr, mir_expr, sample_annotation, primary.di
         cat(paste("    Total samples: ", uniqueN(sample_annotation$sample), "\n", sep = ""))
         for(d in unique(sample_annotation$X_primary_disease)){
           d_sub <- sample_annotation[sample_annotation$X_primary_disease == d, ]
-          cat(paste("\t", d, ": ", nrow(d_sub), "\n", sep = ""))
+          cat(paste("    ", d, ": ", nrow(d_sub), "\n", sep = ""))
           for(st in unique(sample_annotation$sample_type_id)){
-            cat(paste("\t - sample type ", st, ": ", nrow(d_sub[d_sub$sample_type_id == st, ]), "\n", sep = ""))
+            cat(paste("     - sample type ", st, ": ", nrow(d_sub[d_sub$sample_type_id == st, ]), "\n", sep = ""))
           }
         }
         cat("  TRANSCRIPT EXPRESSION DATA\n")
@@ -397,7 +397,7 @@ mirretiData.filter.actualTargets <- function(tpm_expr, mir_expr, interactions, v
 # #' @param log
 # #' @return interactions
 mirreti.oneCondition <- function(tpm_expr, mir_expr, interactions, f.test = FALSE, cluster.size, log = FALSE){
-      cat("\n\t\t\t\t*** Start MIRRETI 4.1 one condition analysis ***\n")
+      cat("\n\n\t\t\t\t*** Start MIRRETI 4.1 one condition analysis ***\n")
 
   # Step 1: run SPONGE interaction filter and determin BCTs (Binding site Controlled Transcripts)
   interactions <- sponge.correlateData(tpm_expr = tpm_expr,
@@ -676,6 +676,20 @@ mirreti.plot.bcmtpStatistics <- function(bcmtp, log = FALSE){
       }
 }
 
+mirreti.plot.transcriptStatistics <- function(interaction){
+  
+  determin.transcriptUsage <- function(interactions){
+    interactions_corr <- interactions[interactions$correlation != '-', ]
+    transcript_bs <- data.table(matrix(nrow = 0, ncol = 5))
+    colnames(transcript_bs) <- c('ensembl_gene_id', 'ensembl_transcript_id', 'miRNA', 'bs_numb', 'mean_coefficient')
+    for(t in unique(interactions_corr$ensembl_transcript_id)){
+      t_sub <- interactions_corr[interactions_corr$ensembl_transcript_id == t, ]
+      dt <- data.table(ensembl_gene_id = unique(t_sub$ensembl_gene_id),
+                       ensembl_transcript_id = t)
+    }
+  }
+}
+
   
 
 # #' DESCRIBE METHODE
@@ -873,11 +887,12 @@ sponge.correlateData <- function(tpm_expr, mir_expr, interactions, condition = N
   
   # Step 4: integrate coefficients and correlation information into interaction data
   interactions <- integrate.candidates.intoInteractions(interactions, candidates)
-  if(!is.null(condition) & 'coefficient' %in% colnames(candidates)){
+  candidates <- interactions[interactions$correlation != '-', ]
+  if(!is.null(condition) & 'coefficient' %in% colnames(interactions)){
     colnames(interactions)[which(colnames(interactions) == "correlation")] <- paste('correlation', condition, sep = "_")
     colnames(interactions)[which(colnames(interactions) == "coefficient")] <- paste('coefficient', condition, sep = "_")
   }
-  else if(!is.null(condition) & 'fstats' %in% colnames(candidates) & 'pval' %in% colnames(candidates) & 'p.adj' %in% colnames(candidates)){
+  else if(!is.null(condition) & 'fstats' %in% colnames(interactions) & 'pval' %in% colnames(interactions) & 'p.adj' %in% colnames(interactions)){
     colnames(interactions)[which(colnames(interactions) == "correlation")] <- paste('correlation', condition, sep = "_")
     colnames(interactions)[which(colnames(interactions) == "fstats")] <- paste('fstats', condition, sep = "_")
     colnames(interactions)[which(colnames(interactions) == "pval")] <- paste('pval', condition, sep = "_")
@@ -899,18 +914,7 @@ sponge.correlateData <- function(tpm_expr, mir_expr, interactions, condition = N
             next
           }
           summarize.candidates(candidates = candidates,
-                               colname = )
-        }
-        if('coefficient' %in% colnames(candidates)){
-          summarize.candidates(candidates = candidates,
-                               colname = 'coefficient')
-        }
-        else if('fstats' %in% colnames(candidates) & 'pval' %in% colnames(candidates) & 'p.adj' %in% colnames(candidates)){
-
-          summarize.candidates(candidates = candidates,
-                               colname = 'pval')
-          summarize.candidates(candidates = candidates,
-                               colname = 'p.adj')
+                               colname = colname)
         }
         cat("\n\nEND OF THE SPONGE DATA CORRELATION REPORT\n")
         cat("______________________________________________________________________\n")

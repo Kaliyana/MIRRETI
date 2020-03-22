@@ -1,0 +1,65 @@
+
+
+				*** Welcome to MIRRETI 4.1 ***
+
+
+______________________________________________________________________
+
+2020-03-22 13:15:55	Start sourcing MIRRETI 4.1 methods and loading core data...
+
+Attaching package: ‘dplyr’
+
+The following objects are masked from ‘package:data.table’:
+
+    between, first, last
+
+The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+Loading required package: foreach
+Loading required package: iterators
+Loading required package: parallel
+2020-03-22 13:18:02	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+⌛ Time required:	127.076 secs
+
+______________________________________________________________________
+
+🆃🅲🅶🅰 EXPRESSION DATA SUBSET REPORT
+
+  🙤 🅘🅝🅟🅤🅣 🅡🅔🅟🅞🅡🅣 🙦
+  SAMPLES
+    Total samples: 12804
+    number of cancer types: 33
+  TRANSCRIPT EXPRESSION DATA
+    transcripts: 197044
+    number of samples: 10535
+  MICRORNA EXPRESSION DATA
+    microRNAs: 743
+    number of samples: 10818
+  CANCER TYPES: glioblastoma multiforme
+  SAMPLE TYPES: 1
+
+
+2020-03-22 13:18:02	Start filtering TCGA samples for cancer and sample types...
+2020-03-22 13:18:02	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	Total samples: 594
+	glioblastoma multiforme: 594
+	 - sample type 1: 594
+⌛ Time required:	0.006 secs
+
+2020-03-22 13:18:02	Start subsetting transcript expression data for samples and filter for NAs...
+2020-03-22 13:18:03	✅ 🇸🇺🇨🇨🇪🇸🇸🇫🇺🇱
+	transcripts: 82910
+	remaining samples: 151
+⌛ Time required:	0.969 secs
+
+2020-03-22 13:18:03	Start subsetting microRNA expression data for samples and filter for NAs...
+Error in FUN(X[[i]], ...) : 
+  only defined on a data frame with all numeric variables
+Calls: do.call ... is.data.frame -> Summary.data.frame -> lapply -> FUN
+Execution halted
